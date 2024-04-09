@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsDate,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -8,7 +9,7 @@ import {
 import { Location } from '../schemas/property.schema';
 import { Type } from 'class-transformer';
 
-export class CreatePropertyDto {
+export class UpdatePropertyDto {
   @IsNotEmpty()
   @IsString()
   name: string;

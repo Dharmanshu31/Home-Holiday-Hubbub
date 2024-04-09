@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import slugify from 'slugify';
+import validator from 'validator';
 
 @Schema()
 export class Location {
@@ -12,7 +13,8 @@ export class Location {
     },
   })
   type: string;
-  @Prop({ index: '2dsphere' })
+
+  @Prop()
   coordinates: Number[];
   formattedAddress: String;
   city: String;
@@ -86,3 +88,5 @@ propertySchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
+
+propertySchema.index({ location: '2dsphere' });

@@ -10,7 +10,6 @@ export class AddressFormate {
       };
       const geoCoder = nodeGeocoder(options);
       const loc = await geoCoder.geocode(address);
-      console.log(loc);
       const location: Location = {
         type: 'Point',
         coordinates: [loc[0].longitude, loc[0].latitude],

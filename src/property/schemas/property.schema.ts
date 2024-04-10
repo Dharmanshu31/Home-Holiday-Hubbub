@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import slugify from 'slugify';
-import validator from 'validator';
 
 @Schema()
 export class Location {
@@ -84,7 +83,7 @@ export class Property extends Document {
 }
 export const propertySchema = SchemaFactory.createForClass(Property);
 
-propertySchema.pre('save', function (next) {
+propertySchema.pre('save', function (next: Function) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });

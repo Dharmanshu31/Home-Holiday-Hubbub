@@ -8,14 +8,17 @@ import {
   Patch,
   Post,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { PropertyService } from './property.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { Property } from './schemas/property.schema';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { Query as ExpressQuery } from 'express-serve-static-core';
+import { PropertyValidationInterceptor } from './interceptor/property-validation.interceptor';
 
 @Controller('property')
+@UseInterceptors(PropertyValidationInterceptor)
 export class PropertyController {
   constructor(private propertyService: PropertyService) {}
 

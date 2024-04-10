@@ -2,6 +2,7 @@ import {
   IsArray,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -19,6 +20,7 @@ export class CreatePropertyDto {
   @IsString()
   address: string;
   @ValidateNested()
+  @IsObject()
   @Type(() => Location)
   location: Location;
   @IsNotEmpty()

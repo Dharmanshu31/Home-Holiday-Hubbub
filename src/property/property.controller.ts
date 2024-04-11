@@ -18,7 +18,6 @@ import { Query as ExpressQuery } from 'express-serve-static-core';
 import { PropertyValidationInterceptor } from './interceptor/property-validation.interceptor';
 
 @Controller('property')
-@UseInterceptors(PropertyValidationInterceptor)
 export class PropertyController {
   constructor(private propertyService: PropertyService) {}
 
@@ -31,6 +30,7 @@ export class PropertyController {
   }
 
   @Get(':id')
+  @UseInterceptors(PropertyValidationInterceptor)
   getOneProperty(@Param('id') id: string): Promise<Property> {
     return this.propertyService.getOneProperty(id);
   }
@@ -48,6 +48,7 @@ export class PropertyController {
   }
 
   @Patch(':id')
+  @UseInterceptors(PropertyValidationInterceptor)
   updateProperty(
     @Param('id') id: string,
     @Body() updateDto: UpdatePropertyDto,
@@ -56,6 +57,7 @@ export class PropertyController {
   }
 
   @Delete(':id')
+  @UseInterceptors(PropertyValidationInterceptor)
   @HttpCode(204)
   deleteProperty(@Param('id') id: string): void {
     this.propertyService.deleteProperty(id);

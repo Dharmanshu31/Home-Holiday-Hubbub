@@ -6,6 +6,8 @@ import { BookingModule } from './booking/booking.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { APP_FILTER } from '@nestjs/core';
+import { AsyncExceptionFilter } from './exception/async-exception.filter';
 
 @Module({
   imports: [
@@ -19,6 +21,6 @@ import { MongooseModule } from '@nestjs/mongoose';
     BookingModule,
     AuthModule,
   ],
-  providers: [],
+  providers: [{ provide: APP_FILTER, useClass: AsyncExceptionFilter }],
 })
 export class AppModule {}

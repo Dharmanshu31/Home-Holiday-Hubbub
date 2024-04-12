@@ -2,6 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { Role } from './user-role.enum';
 import validator from 'validator';
+import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 
 @Schema()
 export class User extends Document {
@@ -52,8 +54,38 @@ export class User extends Document {
 
   @Prop()
   passwordChangeAt: Date;
+
+  @Prop()
   passwordResetToken: string;
+
+  @Prop()
   resetExpireTime: Date;
+
+  comparePassword: (providedPassword: string, userPassword: string) => Promise<boolean>;
+
+  randomToken: () => string;
 }
 
 export const userSchema = SchemaFactory.createForClass(User);
+
+userSchema.pre('save', async function (next: Function) {
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 12);
+    this.confirmPassword = undefined;
+  }
+  next();
+});
+
+userSchema.methods.comparePassword = async function (
+  providedPassword: string,
+  userPassword: string,
+) {
+  return await bcrypt.compare(providedPassword, userPassword);
+};
+
+userSchema.methods.randomToken = function () {
+  const randomToken = crypto.randomBytes(32).toString('hex');
+  this.passwordResetToken = crypto.createHash('sha256').update(randomToken).digest('hex');
+  this.resetExpireTime = Date.now() + 10 * 60 * 1000;
+  return randomToken;
+};

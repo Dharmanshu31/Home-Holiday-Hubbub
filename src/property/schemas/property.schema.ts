@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import slugify from 'slugify';
 
 @Schema({ toJSON: { virtuals: true }, toObject: { virtuals: true } })
@@ -7,10 +7,7 @@ export class Property extends Document {
   @Prop({
     required: [true, 'A property must have a name'],
     trim: true,
-    maxlength: [
-      100,
-      'Property name must have less or equal than 100 characters',
-    ],
+    maxlength: [100, 'Property name must have less or equal than 100 characters'],
     minlength: [10, 'Property name must have more or equal than 10 characters'],
   })
   name: string;
@@ -98,11 +95,21 @@ export class Property extends Document {
   images: string[];
   @Prop({ default: Date.now(), select: false })
   createdAt: Date;
+  @Prop({ type: mongoose.Schema.ObjectId, ref: 'User' })
+  owner: string;
 }
 export const propertySchema = SchemaFactory.createForClass(Property);
 
 propertySchema.pre('save', function (next: Function) {
   this.slug = slugify(this.name, { lower: true });
+  next();
+});
+
+propertySchema.pre(/^find/, function (this: any, next: Function) {
+  this.populate({
+    path: 'owner',
+    select: 'name',
+  });
   next();
 });
 

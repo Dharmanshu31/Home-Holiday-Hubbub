@@ -5,16 +5,16 @@ import { Model } from 'mongoose';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { Query } from 'express-serve-static-core';
+import { Request } from 'express';
 const axios = require('axios');
 
 @Injectable()
 export class PropertyService {
-  constructor(
-    @InjectModel(Property.name) private propertyModel = Model<Property>,
-  ) {}
+  constructor(@InjectModel(Property.name) private propertyModel = Model<Property>) {}
 
-  async createProperty(property: CreatePropertyDto): Promise<Property> {
-    const newProperty = await this.propertyModel.create(property);
+  async createProperty(property: CreatePropertyDto, req: Request): Promise<Property> {
+    const propertyObj = { ...property, owner: req.user['_id'] };
+    const newProperty = await this.propertyModel.create(propertyObj);
     return newProperty;
   }
 
@@ -24,10 +24,7 @@ export class PropertyService {
     const notAllowField: string[] = ['page', 'sort', 'limit', 'fields'];
     notAllowField.forEach((el): boolean => delete newQuery[el]);
     let queryStr: string = JSON.stringify(newQuery);
-    queryStr = queryStr.replace(
-      /\b(gte|gt|lte|lt)\b/g,
-      (match): string => `$${match}`,
-    );
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match): string => `$${match}`);
     filter = JSON.parse(queryStr);
     if (query.keyword) {
       filter = { name: { $regex: query.keyword, $options: 'i' } };
@@ -62,10 +59,7 @@ export class PropertyService {
     return property;
   }
 
-  async updateProperty(
-    id: string,
-    updateDto: UpdatePropertyDto,
-  ): Promise<Property> {
+  async updateProperty(id: string, updateDto: UpdatePropertyDto): Promise<Property> {
     const property = await this.propertyModel.findByIdAndUpdate(id, updateDto, {
       new: true,
       runValidators: true,

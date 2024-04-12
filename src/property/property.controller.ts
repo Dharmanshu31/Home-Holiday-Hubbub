@@ -40,10 +40,7 @@ export class PropertyController {
   }
 
   @Get('near-me/distance/:latlag/unit/:unit')
-  getNearMe(
-    @Param('latlag') latlag: string,
-    @Param('unit') unit: string,
-  ): Promise<{}> {
+  getNearMe(@Param('latlag') latlag: string, @Param('unit') unit: string): Promise<{}> {
     return this.propertyService.getNearMe(latlag, unit);
   }
   @Post()
@@ -54,6 +51,8 @@ export class PropertyController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard(), RoleGuard)
+  @Roles('admin', 'landlord')
   @UseInterceptors(PropertyValidationInterceptor)
   updateProperty(
     @Param('id') id: string,
@@ -63,6 +62,8 @@ export class PropertyController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard(), RoleGuard)
+  @Roles('admin', 'landlord')
   @UseInterceptors(PropertyValidationInterceptor)
   @HttpCode(204)
   deleteProperty(@Param('id') id: string): void {

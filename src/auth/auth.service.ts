@@ -73,6 +73,9 @@ export class AuthService {
       })
       .select('+password');
     if (!user) {
+      user.passwordResetToken = undefined;
+      user.resetExpireTime = undefined;
+      user.save({ validateBeforeSave: false });
       throw new BadRequestException({
         message:
           'Invalid token or the reset link has expired. Please request a new password reset link.',

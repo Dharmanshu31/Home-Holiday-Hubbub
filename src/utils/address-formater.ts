@@ -1,5 +1,4 @@
 const nodeGeocoder = require('node-geocoder');
-import { Location } from '../property/schemas/property.schema';
 export class AddressFormate {
   static async getPropertyLocation(address: string) {
     try {
@@ -10,7 +9,7 @@ export class AddressFormate {
       };
       const geoCoder = nodeGeocoder(options);
       const loc = await geoCoder.geocode(address);
-      const location: Location = {
+      const location = {
         type: 'Point',
         coordinates: [loc[0].longitude, loc[0].latitude],
         formattedAddress: loc[0].formattedAddress,

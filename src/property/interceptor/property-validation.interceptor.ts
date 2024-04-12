@@ -9,7 +9,6 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
 import { Property } from '../schemas/property.schema';
 
 @Injectable()
@@ -24,10 +23,6 @@ export class PropertyValidationInterceptor implements NestInterceptor {
   ): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest();
     const id = req.params.id;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new NotFoundException('Invalid ID');
-    }
 
     const property = await this.propertyModel.findById(id);
     if (!property) {

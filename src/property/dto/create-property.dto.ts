@@ -6,8 +6,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { Location } from '../schemas/property.schema';
 import { Type } from 'class-transformer';
+import { LocationDto } from './location.dto';
 
 export class CreatePropertyDto {
   @IsNotEmpty()
@@ -19,10 +19,12 @@ export class CreatePropertyDto {
   @IsNotEmpty()
   @IsString()
   address: string;
-  @ValidateNested()
+
   @IsObject()
-  @Type(() => Location)
-  location: Location;
+  @ValidateNested()
+  @Type(() => LocationDto)
+  location: LocationDto;
+
   @IsNotEmpty()
   @IsNumber()
   pricePerNight: Number;

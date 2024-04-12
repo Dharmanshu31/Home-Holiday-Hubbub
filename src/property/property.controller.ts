@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { PropertyService } from './property.service';
@@ -16,6 +17,9 @@ import { Property } from './schemas/property.schema';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { PropertyValidationInterceptor } from './interceptor/property-validation.interceptor';
+import { AuthGuard } from '@nestjs/passport';
+import { RoleGuard } from 'src/auth/guards/role.guard';
+import { Roles } from 'src/auth/decorators/role.decorator';
 
 @Controller('property')
 export class PropertyController {
@@ -43,6 +47,8 @@ export class PropertyController {
     return this.propertyService.getNearMe(latlag, unit);
   }
   @Post()
+  @UseGuards(AuthGuard(), RoleGuard)
+  @Roles('admin', 'landlord')
   createProperty(@Body() property: CreatePropertyDto): Promise<Property> {
     return this.propertyService.createProperty(property);
   }

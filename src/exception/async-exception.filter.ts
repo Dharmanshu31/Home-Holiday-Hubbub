@@ -1,12 +1,10 @@
 import {
   ArgumentsHost,
-  BadRequestException,
   Catch,
   ExceptionFilter,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { TokenExpiredError } from '@nestjs/jwt';
 import { Request, Response } from 'express';
 import { MongoError } from 'mongodb';
 
@@ -19,7 +17,6 @@ export class AsyncExceptionFilter implements ExceptionFilter {
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server Error';
-
     if (exception instanceof HttpException) {
       const responseObj = exception.getResponse();
       if (
@@ -38,20 +35,9 @@ export class AsyncExceptionFilter implements ExceptionFilter {
     } else if (exception instanceof MongoError && exception.code === 11000) {
       status = HttpStatus.BAD_REQUEST;
       message = 'User Already Exist!!!';
-    } else if (
-      exception instanceof MongoError &&
-      exception.name === 'CastError'
-    ) {
+    } else if (exception instanceof Error && exception.name === 'CastError') {
       status = HttpStatus.BAD_REQUEST;
       message = 'Invalid ID';
-    } else if (exception instanceof TokenExpiredError) {
-      status = HttpStatus.UNAUTHORIZED;
-    } else if (
-      exception instanceof Error &&
-      exception.message.includes('invalid signature')
-    ) {
-      status = HttpStatus.UNAUTHORIZED;
-      message = 'Invalid JWT token';
     } else if (
       exception instanceof Error &&
       exception.message.includes('ValidationError')
@@ -61,7 +47,6 @@ export class AsyncExceptionFilter implements ExceptionFilter {
     } else if (exception && typeof exception['message'] === 'string') {
       message = exception['message'];
     }
-
     response.status(status).json({
       statusCode: status,
       message: message,

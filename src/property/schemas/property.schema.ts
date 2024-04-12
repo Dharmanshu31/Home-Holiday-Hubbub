@@ -2,26 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import slugify from 'slugify';
 
-@Schema()
-export class Location {
-  @Prop({
-    type: {
-      type: String,
-      default: 'Point',
-      enum: ['Point'],
-    },
-  })
-  type: string;
-
-  @Prop()
-  coordinates: Number[];
-  formattedAddress: String;
-  city: String;
-  state: String;
-  zipcode: String;
-  country: String;
-}
-
 @Schema({ toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class Property extends Document {
   @Prop({
@@ -50,8 +30,46 @@ export class Property extends Document {
   description: string;
   @Prop()
   address: string;
-  @Prop({ type: Object, ref: 'Location' })
-  location?: Location;
+  @Prop({
+    type: {
+      type: String,
+      default: 'Point',
+    },
+    coordinates: {
+      type: [Number],
+      required: true,
+    },
+    formattedAddress: {
+      type: String,
+      required: true,
+    },
+    city: {
+      type: String,
+      required: true,
+    },
+    state: {
+      type: String,
+      required: true,
+    },
+    zipcode: {
+      type: String,
+      required: true,
+    },
+    country: {
+      type: String,
+      required: true,
+    },
+  })
+  location: {
+    type: string;
+    coordinates: Number[];
+    formattedAddress: String;
+    city: String;
+    state: String;
+    zipcode: String;
+    country: String;
+  };
+
   @Prop({ required: [true, 'A property must have a price per night'] })
   pricePerNight: Number;
   @Prop({

@@ -32,7 +32,9 @@ export class PropertyService {
     if (query.keyword) {
       filter = { name: { $regex: query.keyword, $options: 'i' } };
     }
+
     let que = this.propertyModel.find(filter);
+
     if (query.sort) {
       const sortBy = (query.sort as string).split(',').join(' ');
       que = que.sort(sortBy);

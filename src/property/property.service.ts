@@ -55,7 +55,9 @@ export class PropertyService {
   }
 
   async getOneProperty(id: string): Promise<Property> {
-    const property = await this.propertyModel.findById(id);
+    const property = await this.propertyModel
+      .findById(id)
+      .populate({ path: 'reviews', select: '-__v' });
     return property;
   }
 

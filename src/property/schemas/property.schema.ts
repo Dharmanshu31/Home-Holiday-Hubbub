@@ -113,4 +113,10 @@ propertySchema.pre(/^find/, function (this: any, next: Function) {
   next();
 });
 
+propertySchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'property',
+  localField: '_id',
+});
+
 propertySchema.index({ location: '2dsphere' });

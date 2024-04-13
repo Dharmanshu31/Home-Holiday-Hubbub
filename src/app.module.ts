@@ -6,7 +6,7 @@ import { BookingModule } from './booking/booking.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, RouterModule } from '@nestjs/core';
 import { AsyncExceptionFilter } from './exception/async-exception.filter';
 
 @Module({
@@ -14,6 +14,7 @@ import { AsyncExceptionFilter } from './exception/async-exception.filter';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    RouterModule.register([{ path: 'property/:propertyId', module: ReviewModule }]),
     MongooseModule.forRoot(process.env.MONGO_URL),
     PropertyModule,
     UserModule,

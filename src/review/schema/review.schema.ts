@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 @Schema({ toJSON: { virtuals: true }, toObject: { virtuals: true } })
-export class Review {
+export class Review extends Document {
   @Prop({ required: [true, 'Can`t post empty review'] })
   review: string;
 

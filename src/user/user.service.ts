@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { User } from 'src/auth/schemas/user.schema';
 import { UpdateuserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import * as sharp from 'sharp';
 
 @Injectable()
 export class UserService {
@@ -20,7 +21,20 @@ export class UserService {
     return user;
   }
 
-  async updateMe(updateUserDto: UpdateuserDto, req: Request): Promise<User> {
+  async updateMe(
+    updateUserDto: UpdateuserDto,
+    req: Request,
+    file: Express.Multer.File,
+  ): Promise<User> {
+    if (file) {
+      const filename = `user-${updateUserDto.name ? updateUserDto.name : req.user['name']}-${Date.now()}.jpeg`;
+      await sharp(file.buffer)
+        .resize(500, 500)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/imgs/users/${filename}`);
+      updateUserDto.photo = filename;
+    }
     const user = await this.userModel.findByIdAndUpdate(req.user['_id'], updateUserDto, {
       new: true,
       runValidators: true,

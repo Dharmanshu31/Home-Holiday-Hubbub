@@ -10,6 +10,7 @@ import { Request } from 'express';
 import { sendEmail } from 'src/utils/email';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import * as crypto from 'crypto';
+import * as sharp from 'sharp';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +18,16 @@ export class AuthService {
     @InjectModel(User.name) private userModel: Model<User>,
     private jwtService: JwtService,
   ) {}
-  async signUp(createUser: CreateUserDto): Promise<User> {
+  async signUp(createUser: CreateUserDto, file: Express.Multer.File): Promise<User> {
+    if (file) {
+      const filename = `user-${createUser.name}-${Date.now()}.jpeg`;
+      await sharp(file.buffer)
+        .resize(500, 500)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/imgs/users/${filename}`);
+      createUser.photo = filename;
+    }
     const user = await this.userModel.create(createUser);
     return user;
   }

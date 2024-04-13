@@ -6,13 +6,30 @@ import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { Query } from 'express-serve-static-core';
 import { Request } from 'express';
+import * as sharp from 'sharp';
 const axios = require('axios');
 
 @Injectable()
 export class PropertyService {
   constructor(@InjectModel(Property.name) private propertyModel = Model<Property>) {}
 
-  async createProperty(property: CreatePropertyDto, req: Request): Promise<Property> {
+  async createProperty(
+    property: CreatePropertyDto,
+    req: Request,
+    files: Express.Multer.File[],
+  ): Promise<Property> {
+    property.images = [];
+
+    for (const file of files) {
+      let count = 1;
+      const filename = `Peoperty-${property.name}-${Date.now()}-${count++}.jpeg`;
+      await sharp(file.buffer)
+        .resize(2000, 1333)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/property/${filename}`);
+      property.images.push(filename);
+    }
     const propertyObj = { ...property, owner: req.user['_id'] };
     const newProperty = await this.propertyModel.create(propertyObj);
     return newProperty;
@@ -61,11 +78,28 @@ export class PropertyService {
     return property;
   }
 
-  async updateProperty(id: string, updateDto: UpdatePropertyDto): Promise<Property> {
+  async updateProperty(
+    id: string,
+    updateDto: UpdatePropertyDto,
+    files: Express.Multer.File[],
+  ): Promise<Property> {
     const property = await this.propertyModel.findByIdAndUpdate(id, updateDto, {
       new: true,
       runValidators: true,
     });
+    updateDto.images = [];
+
+    for (const file of files) {
+      let count = 1;
+      const filename = `Peoperty-${updateDto.name ? updateDto.name : property['name']}-${Date.now()}-${count++}.jpeg`;
+      await sharp(file.buffer)
+        .resize(2000, 1333)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/imgs/properts/${filename}`);
+      property.images.push(filename);
+    }
+    property.save({ validateBeforeSave: false });
     return property;
   }
 

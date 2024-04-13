@@ -9,12 +9,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { APP_FILTER, RouterModule } from '@nestjs/core';
 import { AsyncExceptionFilter } from './exception/async-exception.filter';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    MulterModule.register(),
     RouterModule.register([{ path: 'property/:propertyId', module: ReviewModule }]),
     MongooseModule.forRoot(process.env.MONGO_URL),
     PropertyModule,

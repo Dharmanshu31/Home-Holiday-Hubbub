@@ -9,6 +9,7 @@ import {
   Post,
   Query,
   Req,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -22,6 +23,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { Request } from 'express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('property')
 export class PropertyController {
@@ -48,22 +50,26 @@ export class PropertyController {
   @Post()
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('admin', 'landlord')
+  @UseInterceptors(FilesInterceptor('images', 5))
   createProperty(
+    @UploadedFiles() files: Express.Multer.File[],
     @Body() property: CreatePropertyDto,
     @Req() req: Request,
   ): Promise<Property> {
-    return this.propertyService.createProperty(property, req);
+    return this.propertyService.createProperty(property, req, files);
   }
 
   @Patch(':id')
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('admin', 'landlord')
+  @UseInterceptors(FilesInterceptor('images', 5))
   @UseInterceptors(PropertyValidationInterceptor)
   updateProperty(
+    @UploadedFiles() files: Express.Multer.File[],
     @Param('id') id: string,
     @Body() updateDto: UpdatePropertyDto,
   ): Promise<Property> {
-    return this.propertyService.updateProperty(id, updateDto);
+    return this.propertyService.updateProperty(id, updateDto, files);
   }
 
   @Delete(':id')

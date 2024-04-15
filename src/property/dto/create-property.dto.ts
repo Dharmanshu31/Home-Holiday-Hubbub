@@ -3,6 +3,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsObject,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -43,6 +44,8 @@ export class CreatePropertyDto {
   @IsArray()
   @IsString({ each: true })
   amenities: string[];
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   images?: string[];

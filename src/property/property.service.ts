@@ -18,18 +18,20 @@ export class PropertyService {
     req: Request,
     files: Express.Multer.File[],
   ): Promise<Property> {
-    property.images = [];
-
-    for (const file of files) {
+    if (files) {
+      property.images = [];
       let count = 1;
-      const filename = `Peoperty-${property.name}-${Date.now()}-${count++}.jpeg`;
-      await sharp(file.buffer)
-        .resize(2000, 1333)
-        .toFormat('jpeg')
-        .jpeg({ quality: 90 })
-        .toFile(`public/property/${filename}`);
-      property.images.push(filename);
+      for (const file of files) {
+        const filename = `Peoperty-${property.name}-${Date.now()}-${count++}.jpeg`;
+        await sharp(file.buffer)
+          .resize(2000, 1333)
+          .toFormat('jpeg')
+          .jpeg({ quality: 90 })
+          .toFile(`public/property/${filename}`);
+        property.images.push(filename);
+      }
     }
+
     const propertyObj = { ...property, owner: req.user['_id'] };
     const newProperty = await this.propertyModel.create(propertyObj);
     return newProperty;
@@ -87,17 +89,18 @@ export class PropertyService {
       new: true,
       runValidators: true,
     });
-    updateDto.images = [];
-
-    for (const file of files) {
+    if (files) {
+      updateDto.images = [];
       let count = 1;
-      const filename = `Peoperty-${updateDto.name ? updateDto.name : property['name']}-${Date.now()}-${count++}.jpeg`;
-      await sharp(file.buffer)
-        .resize(2000, 1333)
-        .toFormat('jpeg')
-        .jpeg({ quality: 90 })
-        .toFile(`public/imgs/properts/${filename}`);
-      property.images.push(filename);
+      for (const file of files) {
+        const filename = `Peoperty-${updateDto.name ? updateDto.name : property['name']}-${Date.now()}-${count++}.jpeg`;
+        await sharp(file.buffer)
+          .resize(2000, 1333)
+          .toFormat('jpeg')
+          .jpeg({ quality: 90 })
+          .toFile(`public/imgs/properts/${filename}`);
+        property.images.push(filename);
+      }
     }
     property.save({ validateBeforeSave: false });
     return property;

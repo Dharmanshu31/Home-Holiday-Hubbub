@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Req,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -13,7 +14,7 @@ import { AuthService } from './auth.service';
 import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/signUp.dto';
 import { LoginDto } from './dto/login.dto';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { ForgetPasswordDto } from './dto/forgetPassword.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -32,8 +33,11 @@ export class AuthController {
   }
 
   @Get('login')
-  login(@Body() loginDto: LoginDto): Promise<{ token: string; user: User }> {
-    return this.authService.login(loginDto);
+  login(
+    @Body() loginDto: LoginDto,
+    @Res() res: Response,
+  ): Promise<{ token: string; user: User }> {
+    return this.authService.login(loginDto, res);
   }
 
   @Post('forgetPassword')
@@ -48,7 +52,8 @@ export class AuthController {
   resetPassword(
     @Param('token') token: string,
     @Body() resetPasswordDto: ResetPasswordDto,
-  ): Promise<string> {
-    return this.authService.resetPassword(token, resetPasswordDto);
+    @Res() res: Response,
+  ): Promise<{ token: string; user: User }> {
+    return this.authService.resetPassword(token, resetPasswordDto, res);
   }
 }

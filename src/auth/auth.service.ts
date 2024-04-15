@@ -6,7 +6,7 @@ import { CreateUserDto } from './dto/signUp.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ForgetPasswordDto } from './dto/forgetPassword.dto';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { sendEmail } from 'src/utils/email';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import * as crypto from 'crypto';
@@ -32,7 +32,7 @@ export class AuthService {
     return user;
   }
 
-  async login(loginDto: LoginDto): Promise<{ token: string; user: User }> {
+  async login(loginDto: LoginDto, res: Response): Promise<{ token: string; user: User }> {
     const user = await this.userModel
       .findOne({ email: loginDto.email })
       .select('+password');
@@ -42,10 +42,20 @@ export class AuthService {
       });
     }
     const token = await this.jwtService.signAsync({ id: user._id });
+    res.cookie('jwt', token, {
+      secure: true,
+      httpOnly: true,
+      expires: new Date(
+        Date.now() + parseInt(process.env.JWT_COOKIE_EXP) * 24 * 60 * 60 * 1000,
+      ),
+    });
     return { token, user };
   }
 
-  async forgetPassword(forgetPasswordDto: ForgetPasswordDto, req: Request) {
+  async forgetPassword(
+    forgetPasswordDto: ForgetPasswordDto,
+    req: Request,
+  ): Promise<string> {
     const user = await this.userModel.findOne({ email: forgetPasswordDto.email });
     if (!user) throw new UnauthorizedException('User Not Exist!!!');
     const randomToken = user.randomToken();
@@ -74,7 +84,11 @@ export class AuthService {
     }
   }
 
-  async resetPassword(token: string, resetPasswordDto: ResetPasswordDto) {
+  async resetPassword(
+    token: string,
+    resetPasswordDto: ResetPasswordDto,
+    res: Response,
+  ): Promise<{ token: string; user: User }> {
     const hashToken = crypto.createHash('sha256').update(token).digest('hex');
     const user = await this.userModel
       .findOne({
@@ -97,7 +111,14 @@ export class AuthService {
     user.resetExpireTime = undefined;
     user.passwordChangeAt = new Date(Date.now() - 1000);
     await user.save();
-
-    return 'Password Has Been Change Susseccfully Login now!!!';
+    const Jwttoken = await this.jwtService.signAsync({ id: user._id });
+    res.cookie('jwt', Jwttoken, {
+      secure: true,
+      httpOnly: true,
+      expires: new Date(
+        Date.now() + parseInt(process.env.JWT_COOKIE_EXP) * 24 * 60 * 60 * 1000,
+      ),
+    });
+    return { token: Jwttoken, user };
   }
 }

@@ -25,6 +25,14 @@ export class Property extends Document {
   slug: string;
   @Prop({ required: [true, 'A property must have a description'], trim: true })
   description: string;
+  @Prop({ required: [true, 'A property must have a highlight'], trim: true })
+  highlight: string;
+  @Prop({ required: [true, 'A property must have a highlightDetail'], trim: true })
+  highlightDetail: string;
+  @Prop({ required: [true, 'A property must have a highlight'] })
+  propertyCategory: string;
+  @Prop({ required: [true, 'A property must have a highlight'] })
+  propertyType: string;
   @Prop()
   address: string;
   @Prop({

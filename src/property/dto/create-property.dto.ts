@@ -19,6 +19,18 @@ export class CreatePropertyDto {
   description: string;
   @IsNotEmpty()
   @IsString()
+  highlight: string;
+  @IsNotEmpty()
+  @IsString()
+  highlightDetail: string;
+  @IsNotEmpty()
+  @IsString()
+  propertyCategory: string;
+  @IsNotEmpty()
+  @IsString()
+  propertyType: string;
+  @IsNotEmpty()
+  @IsString()
   address: string;
 
   @IsObject()

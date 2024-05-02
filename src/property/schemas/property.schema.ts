@@ -42,7 +42,6 @@ export class Property extends Document {
     },
     coordinates: {
       type: [Number],
-      required: true,
     },
     formattedAddress: {
       type: String,

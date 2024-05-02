@@ -7,6 +7,7 @@ import { UpdatePropertyDto } from './dto/update-property.dto';
 import { Query } from 'express-serve-static-core';
 import { Request } from 'express';
 import * as sharp from 'sharp';
+import { AddressFormate } from 'src/utils/address-formater';
 const axios = require('axios');
 
 @Injectable()
@@ -31,7 +32,11 @@ export class PropertyService {
         property.images.push(filename);
       }
     }
-
+    const cor = await AddressFormate.getPropertyLocation(property.address);
+    if (property.location.coordinates.length === 0) {
+      (property.location.coordinates[0] = cor.lag),
+        (property.location.coordinates[1] = cor.lat);
+    }
     const propertyObj = { ...property, owner: req.user['_id'] };
     const newProperty = await this.propertyModel.create(propertyObj);
     return newProperty;

@@ -1,11 +1,11 @@
-import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class LocationDto {
   @IsNotEmpty()
   @IsString()
   type: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsArray()
   @IsNumber({}, { each: true })
   coordinates: number[];

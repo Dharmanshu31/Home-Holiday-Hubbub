@@ -10,13 +10,8 @@ export class AddressFormate {
       const geoCoder = nodeGeocoder(options);
       const loc = await geoCoder.geocode(address);
       const location = {
-        type: 'Point',
-        coordinates: [loc[0].longitude, loc[0].latitude],
-        formattedAddress: loc[0].formattedAddress,
-        city: loc[0].city,
-        state: loc[0].stateCode,
-        zipcode: loc[0].zipcode,
-        country: loc[0].countryCode,
+        lag: loc[0].longitude,
+        lat: loc[0].latitude,
       };
       return location;
     } catch (err) {

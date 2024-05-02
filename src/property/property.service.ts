@@ -9,7 +9,6 @@ import { Request } from 'express';
 import * as sharp from 'sharp';
 import { AddressFormate } from 'src/utils/address-formater';
 const axios = require('axios');
-
 @Injectable()
 export class PropertyService {
   constructor(@InjectModel(Property.name) private propertyModel = Model<Property>) {}
@@ -28,7 +27,7 @@ export class PropertyService {
           .resize(2000, 1333)
           .toFormat('jpeg')
           .jpeg({ quality: 90 })
-          .toFile(`public/property/${filename}`);
+          .toFile(`../../../frontend/public/assets/properts/${filename}`);
         property.images.push(filename);
       }
     }
@@ -103,7 +102,7 @@ export class PropertyService {
           .resize(2000, 1333)
           .toFormat('jpeg')
           .jpeg({ quality: 90 })
-          .toFile(`public/imgs/properts/${filename}`);
+          .toFile(`../../../frontend/public/assets/properts/${filename}`);
         property.images.push(filename);
       }
     }

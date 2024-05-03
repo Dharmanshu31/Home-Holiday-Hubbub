@@ -32,12 +32,9 @@ export class AuthController {
     return this.authService.signUp(createUser, file);
   }
 
-  @Get('login')
-  login(
-    @Body() loginDto: LoginDto,
-    @Res() res: Response,
-  ): Promise<{ token: string; user: User }> {
-    return this.authService.login(loginDto, res);
+  @Post('login')
+  login(@Body() loginDto: LoginDto): Promise<{ token: string; user: User }> {
+    return this.authService.login(loginDto);
   }
 
   @Post('forgetPassword')

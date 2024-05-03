@@ -6,6 +6,7 @@ import { User } from 'src/auth/schemas/user.schema';
 import { UpdateuserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import * as sharp from 'sharp';
+import * as path from 'path';
 
 @Injectable()
 export class UserService {
@@ -28,11 +29,15 @@ export class UserService {
   ): Promise<User> {
     if (file) {
       const filename = `user-${updateUserDto.name ? updateUserDto.name : req.user['name']}-${Date.now()}.jpeg`;
+      const absolutePath = path.resolve(
+        __dirname,
+        `../../../frontend/public/assets/users/${filename}`,
+      );
       await sharp(file.buffer)
         .resize(500, 500)
         .toFormat('jpeg')
         .jpeg({ quality: 90 })
-        .toFile(`public/imgs/users/${filename}`);
+        .toFile(absolutePath);
       updateUserDto.photo = filename;
     }
     const user = await this.userModel.findByIdAndUpdate(req.user['_id'], updateUserDto, {

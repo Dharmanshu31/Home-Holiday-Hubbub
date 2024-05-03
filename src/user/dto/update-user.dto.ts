@@ -13,6 +13,5 @@ export class UpdateuserDto {
   email: string;
 
   @IsOptional()
-  @IsString()
   photo: string;
 }

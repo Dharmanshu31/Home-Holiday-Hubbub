@@ -7,6 +7,7 @@ import { UpdatePropertyDto } from './dto/update-property.dto';
 import { Query } from 'express-serve-static-core';
 import { Request } from 'express';
 import * as sharp from 'sharp';
+import * as path from 'path';
 import { AddressFormate } from 'src/utils/address-formater';
 const axios = require('axios');
 @Injectable()
@@ -23,11 +24,15 @@ export class PropertyService {
       let count = 1;
       for (const file of files) {
         const filename = `Peoperty-${property.name}-${Date.now()}-${count++}.jpeg`;
+        const absolutePath = path.resolve(
+          __dirname,
+          `../../../frontend/public/assets/properts/${filename}`,
+        );
         await sharp(file.buffer)
           .resize(2000, 1333)
           .toFormat('jpeg')
           .jpeg({ quality: 90 })
-          .toFile(`../../../frontend/public/assets/properts/${filename}`);
+          .toFile(absolutePath);
         property.images.push(filename);
       }
     }
@@ -98,11 +103,15 @@ export class PropertyService {
       let count = 1;
       for (const file of files) {
         const filename = `Peoperty-${updateDto.name ? updateDto.name : property['name']}-${Date.now()}-${count++}.jpeg`;
+        const absolutePath = path.resolve(
+          __dirname,
+          `../../../frontend/public/assets/properts/${filename}`,
+        );
         await sharp(file.buffer)
           .resize(2000, 1333)
           .toFormat('jpeg')
           .jpeg({ quality: 90 })
-          .toFile(`../../../frontend/public/assets/properts/${filename}`);
+          .toFile(absolutePath);
         property.images.push(filename);
       }
     }

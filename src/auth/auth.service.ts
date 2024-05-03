@@ -11,6 +11,7 @@ import { sendEmail } from 'src/utils/email';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import * as crypto from 'crypto';
 import * as sharp from 'sharp';
+import * as path from 'path';
 
 @Injectable()
 export class AuthService {
@@ -21,18 +22,22 @@ export class AuthService {
   async signUp(createUser: CreateUserDto, file: Express.Multer.File): Promise<User> {
     if (file) {
       const filename = `user-${createUser.name}-${Date.now()}.jpeg`;
+      const absolutePath = path.resolve(
+        __dirname,
+        `../../../frontend/public/assets/users/${filename}`,
+      );
       await sharp(file.buffer)
         .resize(500, 500)
         .toFormat('jpeg')
         .jpeg({ quality: 90 })
-        .toFile(`public/imgs/users/${filename}`);
+        .toFile(absolutePath);
       createUser.photo = filename;
     }
     const user = await this.userModel.create(createUser);
     return user;
   }
 
-  async login(loginDto: LoginDto, res: Response): Promise<{ token: string; user: User }> {
+  async login(loginDto: LoginDto): Promise<{ token: string; user: User }> {
     const user = await this.userModel
       .findOne({ email: loginDto.email })
       .select('+password');
@@ -41,14 +46,14 @@ export class AuthService {
         message: 'Email or Password is InValid',
       });
     }
-    const token = await this.jwtService.signAsync({ id: user._id });
-    res.cookie('jwt', token, {
-      secure: true,
-      httpOnly: true,
-      expires: new Date(
-        Date.now() + parseInt(process.env.JWT_COOKIE_EXP) * 24 * 60 * 60 * 1000,
-      ),
-    });
+    const token = await this.jwtService.signAsync({ id: user._id, role: user.role });
+    // res.cookie('jwt', token, {
+    //   secure: true,
+    //   httpOnly: true,
+    //   expires: new Date(
+    //     Date.now() + parseInt(process.env.JWT_COOKIE_EXP) * 24 * 60 * 60 * 1000,
+    //   ),
+    // });
     return { token, user };
   }
 

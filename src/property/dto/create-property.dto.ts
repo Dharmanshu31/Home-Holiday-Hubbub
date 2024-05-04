@@ -40,19 +40,19 @@ export class CreatePropertyDto {
 
   @IsNotEmpty()
   @IsNumber()
-  pricePerNight: Number;
+  pricePerNight: number;
   @IsNotEmpty()
   @IsNumber()
-  maxGuests: Number;
+  maxGuests: number;
   @IsNotEmpty()
   @IsNumber()
-  bedrooms: Number;
+  bedrooms: number;
   @IsNotEmpty()
   @IsNumber()
-  bathrooms: Number;
+  bathrooms: number;
   @IsNotEmpty()
   @IsNumber()
-  size: Number;
+  bed: number;
   @IsArray()
   @IsString({ each: true })
   amenities: string[];

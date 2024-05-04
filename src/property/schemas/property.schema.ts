@@ -7,8 +7,6 @@ export class Property extends Document {
   @Prop({
     required: [true, 'A property must have a name'],
     trim: true,
-    maxlength: [100, 'Property name must have less or equal than 100 characters'],
-    minlength: [10, 'Property name must have more or equal than 10 characters'],
   })
   name: string;
   @Prop({
@@ -87,7 +85,7 @@ export class Property extends Document {
   @Prop({ required: [true, 'A property must specify the number of bathrooms'] })
   bathrooms: Number;
   @Prop({ required: [true, 'A property must have a size in square feet'] })
-  size: Number;
+  bed: Number;
   @Prop()
   amenities: string[];
   @Prop({

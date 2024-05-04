@@ -42,7 +42,7 @@ export class AuthService {
       .findOne({ email: loginDto.email })
       .select('+password');
     if (!user || !(await user.comparePassword(loginDto.password, user.password))) {
-      throw new UnauthorizedException({
+      throw new BadRequestException({
         message: 'Email or Password is InValid',
       });
     }

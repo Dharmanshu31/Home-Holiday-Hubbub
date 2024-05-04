@@ -1,10 +1,6 @@
 import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class LocationDto {
-  @IsNotEmpty()
-  @IsString()
-  type: string;
-
   @IsOptional()
   @IsArray()
   @IsNumber({}, { each: true })

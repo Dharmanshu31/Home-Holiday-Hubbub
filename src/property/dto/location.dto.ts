@@ -1,9 +1,15 @@
+import { Transform } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class LocationDto {
   @IsOptional()
-  @IsArray()
-  @IsNumber({}, { each: true })
+  @Transform(({ value }) => {
+    if (Array.isArray(value) && value.length > 0 && !isNaN(parseFloat(value[0]))) {
+      return value.map(parseFloat);
+    } else {
+      return value;
+    }
+  })
   coordinates: number[];
 
   @IsNotEmpty()

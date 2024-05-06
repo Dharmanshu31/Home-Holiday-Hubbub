@@ -6,6 +6,7 @@ import {
   HttpCode,
   Param,
   Patch,
+  Post,
   Req,
   UploadedFile,
   UseGuards,
@@ -78,5 +79,27 @@ export class UserController {
   @Roles('admin')
   deleteUserByAdmin(@Param('id') id: string): Promise<void> {
     return this.userService.deleteUserByAdmin(id);
+  }
+
+  @Get('wishList')
+  @UseGuards(AuthGuard())
+  getWishList(@Req() req: Request): Promise<User> {
+    return this.userService.getWishList(req);
+  }
+  @Post('wishList/:propertyId')
+  @UseGuards(AuthGuard())
+  addWishList(
+    @Param('propertyId') propertyId: string,
+    @Req() req: Request,
+  ): Promise<User> {
+    return this.userService.addWishList(propertyId, req);
+  }
+  @Delete('wishList/:propertyId')
+  @UseGuards(AuthGuard())
+  removeWishList(
+    @Param('propertyId') propertyId: string,
+    @Req() req: Request,
+  ): Promise<User> {
+    return this.userService.removeWishList(propertyId, req);
   }
 }

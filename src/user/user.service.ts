@@ -104,4 +104,26 @@ export class UserService {
       });
     }
   }
+
+  async addWishList(propertyId: string, req: Request): Promise<User> {
+    const user = await this.userModel.findById(req.user['_id']);
+    user.wishList.push(propertyId);
+    user.save({ validateBeforeSave: false });
+    return user;
+  }
+
+  async removeWishList(propertyId: string, req: Request): Promise<User> {
+    const user = await this.userModel.findById(req.user['_id']);
+    const index = user.wishList.indexOf(propertyId);
+    if (index !== -1) {
+      user.wishList.splice(index, 1);
+    }
+    user.save({ validateBeforeSave: false });
+    return user;
+  }
+
+  async getWishList(req: Request): Promise<User> {
+    const user = await this.userModel.findById(req.user['_id']).populate('wishList');
+    return user;
+  }
 }

@@ -37,7 +37,10 @@ export class PropertyService {
       }
     }
     const cor = await AddressFormate.getPropertyLocation(property.address);
-    if (property.location.coordinates.length === 0) {
+    if (
+      property.location.coordinates[0] === 0 &&
+      property.location.coordinates[1] === 0
+    ) {
       (property.location.coordinates[0] = cor.lag),
         (property.location.coordinates[1] = cor.lat);
     }

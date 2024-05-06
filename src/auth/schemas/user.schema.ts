@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document, Mongoose } from 'mongoose';
 import { Role } from './user-role.enum';
 import validator from 'validator';
 import * as bcrypt from 'bcrypt';
@@ -51,6 +51,13 @@ export class User extends Document {
 
   @Prop({ enum: Role, default: Role.USER })
   role: Role;
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Property' }],
+    ref: 'Property',
+    default: [],
+  })
+  wishList: string[];
 
   @Prop()
   passwordChangeAt: Date;

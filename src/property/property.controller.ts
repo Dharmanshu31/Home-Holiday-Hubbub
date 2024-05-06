@@ -50,7 +50,7 @@ export class PropertyController {
   @Post()
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('admin', 'landlord')
-  @UseInterceptors(FilesInterceptor('images', 5))
+  @UseInterceptors(FilesInterceptor('images', 10))
   createProperty(
     @UploadedFiles() files: Express.Multer.File[],
     @Body() property: CreatePropertyDto,

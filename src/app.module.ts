@@ -8,7 +8,6 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { APP_FILTER, RouterModule } from '@nestjs/core';
 import { AsyncExceptionFilter } from './exception/async-exception.filter';
-import { WishlistModule } from './wishlist/wishlist.module';
 import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
@@ -24,7 +23,6 @@ import { MulterModule } from '@nestjs/platform-express';
     ReviewModule,
     BookingModule,
     AuthModule,
-    WishlistModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: AsyncExceptionFilter }],
 })

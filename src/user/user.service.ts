@@ -107,8 +107,10 @@ export class UserService {
 
   async addWishList(propertyId: string, req: Request): Promise<User> {
     const user = await this.userModel.findById(req.user['_id']);
-    user.wishList.push(propertyId);
-    user.save({ validateBeforeSave: false });
+    if (!user.wishList.includes(propertyId)) {
+      user.wishList.push(propertyId);
+      await user.save({ validateBeforeSave: false });
+    }
     return user;
   }
 

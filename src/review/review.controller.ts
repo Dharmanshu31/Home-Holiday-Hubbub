@@ -19,16 +19,16 @@ import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { UpdateReviewDto } from './dto/update-review.dto';
 
-@Controller('review')
+@Controller()
 export class ReviewController {
   constructor(private reviewService: ReviewService) {}
-  @Get()
+  @Get('review')
   @UseGuards(AuthGuard())
   getReview(@Req() req: Request): Promise<Review[]> {
     return this.reviewService.getReview(req);
   }
 
-  @Post()
+  @Post(':propertyId/review')
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('user', 'admin')
   createReview(
@@ -39,7 +39,7 @@ export class ReviewController {
     return this.reviewService.createReview(propertyId, req.user['_id'], createReviewDto);
   }
 
-  @Patch(':reviewId')
+  @Patch(':propertyId/review/:reviewId')
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('user', 'admin')
   updatereview(
@@ -50,7 +50,7 @@ export class ReviewController {
     return this.reviewService.updateReview(propertyId, reviewId, updateReviewDto);
   }
 
-  @Delete(':reviewId')
+  @Delete(':propertyId/review/:reviewId')
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('user', 'admin')
   @HttpCode(204)

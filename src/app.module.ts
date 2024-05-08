@@ -16,7 +16,7 @@ import { MulterModule } from '@nestjs/platform-express';
       isGlobal: true,
     }),
     MulterModule.register(),
-    RouterModule.register([{ path: 'property/:propertyId', module: ReviewModule }]),
+    RouterModule.register([{ path: 'property', module: ReviewModule }]),
     MongooseModule.forRoot(process.env.MONGO_URL),
     PropertyModule,
     UserModule,

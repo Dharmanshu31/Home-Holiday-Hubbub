@@ -31,8 +31,13 @@ export class ReviewService {
             ratingQuantity: stats[0].nRating,
             ratingsAverage: stats[0].avgRating.toFixed(1),
           }
-        : { ratingQuantity: 0, ratingsAverage: 4.5 };
+        : { ratingQuantity: 0, ratingsAverage: 0 };
     const property = await this.propertyModel.findByIdAndUpdate(propertyId, updateData);
+    if (!property) {
+      throw new NotFoundException({
+        message: 'There is no property available with this id ',
+      });
+    }
     await property.save({ validateBeforeSave: false });
   }
 

@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -18,14 +19,17 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { Query as ExpressQuery } from 'express-serve-static-core';
 
 @Controller()
 export class ReviewController {
   constructor(private reviewService: ReviewService) {}
-  @Get('review')
-  @UseGuards(AuthGuard())
-  getReview(@Req() req: Request): Promise<Review[]> {
-    return this.reviewService.getReview(req);
+  @Get(':propertyId/review')
+  getReview(
+    @Param('propertyId') propertyId: string,
+    @Query() query: ExpressQuery,
+  ): Promise<Review[]> {
+    return this.reviewService.getReview(propertyId, query);
   }
 
   @Post(':propertyId/review')

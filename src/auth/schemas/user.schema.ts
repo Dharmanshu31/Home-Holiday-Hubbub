@@ -10,6 +10,9 @@ export class User extends Document {
   @Prop({ required: [true, 'Oops! It looks like you forgot to fill in Name'] })
   name: string;
 
+  @Prop({ required: [true, 'Oops! It looks like you forgot to fill in phone number'] })
+  phone: string;
+
   @Prop({
     required: [true, 'Oops! It looks like you forgot to fill in Email'],
     unique: true,

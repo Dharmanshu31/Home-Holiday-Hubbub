@@ -9,6 +9,11 @@ export class UpdateuserDto {
   @IsOptional()
   @IsNotEmpty()
   @IsString()
+  phone: string;
+
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
   @IsEmail()
   email: string;
 

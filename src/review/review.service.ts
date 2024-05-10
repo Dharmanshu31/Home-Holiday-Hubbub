@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Review } from './schema/review.schema';
 import mongoose, { Model } from 'mongoose';
 import { CreateReviewDto } from './dto/create-review.dto';
-import { Request } from 'express';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { Property } from 'src/property/schemas/property.schema';
 import { Query } from 'express-serve-static-core';
@@ -44,11 +43,9 @@ export class ReviewService {
 
   async getReview(propertyId: string, query: Query): Promise<Review[]> {
     let que = this.reviewModel.find({ property: propertyId });
-    if (query.page) {
-      const page = +query.page;
+    if (query.limit) {
       const limit = +query.limit;
-      const skip = (page - 1) * limit;
-      que = que.skip(skip).limit(limit);
+      que = que.limit(limit);
     }
     let review = await que;
     if (!review) {

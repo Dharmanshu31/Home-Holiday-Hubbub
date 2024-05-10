@@ -113,7 +113,6 @@ propertySchema.pre('save', function (next: Function) {
 propertySchema.pre(/^find/, function (this: any, next: Function) {
   this.populate({
     path: 'owner',
-    select: 'name',
   });
   next();
 });

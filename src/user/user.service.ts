@@ -107,20 +107,20 @@ export class UserService {
 
   async addWishList(propertyId: string, req: Request): Promise<User> {
     const user = await this.userModel.findById(req.user['_id']);
-    if (!user.wishList.includes(propertyId)) {
+    if (user.wishList.includes(propertyId)) {
+      const index = user.wishList.indexOf(propertyId);
+      if (index !== -1) {
+        user.wishList.splice(index, 1);
+      }
+    } else {
       user.wishList.push(propertyId);
-      await user.save({ validateBeforeSave: false });
     }
+    await user.save({ validateBeforeSave: false });
     return user;
   }
 
-  async removeWishList(propertyId: string, req: Request): Promise<User> {
-    const user = await this.userModel.findById(req.user['_id']);
-    const index = user.wishList.indexOf(propertyId);
-    if (index !== -1) {
-      user.wishList.splice(index, 1);
-    }
-    user.save({ validateBeforeSave: false });
+  async getOnlyWishList(req: Request): Promise<User> {
+    const user = await this.userModel.findById(req.user['_id']).select('wishList')
     return user;
   }
 

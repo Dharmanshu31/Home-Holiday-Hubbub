@@ -94,12 +94,9 @@ export class UserController {
   ): Promise<User> {
     return this.userService.addWishList(propertyId, req);
   }
-  @Delete('wishList/:propertyId')
+  @Get('onlyWishList')
   @UseGuards(AuthGuard())
-  removeWishList(
-    @Param('propertyId') propertyId: string,
-    @Req() req: Request,
-  ): Promise<User> {
-    return this.userService.removeWishList(propertyId, req);
+  getOnlyWishList(@Req() req: Request): Promise<User> {
+    return this.userService.getOnlyWishList(req);
   }
 }

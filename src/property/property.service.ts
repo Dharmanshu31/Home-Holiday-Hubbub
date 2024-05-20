@@ -12,7 +12,7 @@ import { AddressFormate } from 'src/utils/address-formater';
 const axios = require('axios');
 @Injectable()
 export class PropertyService {
-  constructor(@InjectModel(Property.name) private propertyModel = Model<Property>) {}
+  constructor(@InjectModel(Property.name) private propertyModel: Model<Property>) {}
 
   async createProperty(
     property: CreatePropertyDto,

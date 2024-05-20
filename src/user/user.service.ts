@@ -125,7 +125,7 @@ export class UserService {
   }
 
   async getWishList(req: Request): Promise<User> {
-    const user = await this.userModel.findById(req.user['_id']).populate('wishList');
+    const user = await this.userModel.findById(req.user['_id']).select('wishList').populate('wishList');
     return user;
   }
 }

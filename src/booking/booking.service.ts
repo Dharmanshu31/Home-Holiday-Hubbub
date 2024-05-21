@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Booking } from './schemas/booking.schema';
 import { Model } from 'mongoose';
@@ -22,10 +22,7 @@ export class BookingService {
     const calcStartDate = new Date(startDate);
     const calcEndDate = new Date(endDate);
     const diffranceInDate = calcEndDate.getTime() - calcStartDate.getTime();
-    let duration = diffranceInDate / (1000 * 3600 * 24);
-    if (duration === 0) {
-      duration = 1;
-    }
+    let duration = diffranceInDate / (1000 * 3600 * 24) + 1;
     const stripe = require('stripe')(process.env.STRIP_SECRET);
     const property = await this.propertyModel.findById(propertyId);
     const session = await stripe.checkout.sessions.create({
@@ -52,6 +49,74 @@ export class BookingService {
         },
       ],
     });
+    if (session) {
+      await this.bookingModel.create({
+        userId: req.user['_id'],
+        propertyId,
+        ownerId: property.owner,
+        startDate,
+        endDate,
+        totalPrice: +property.pricePerNight * duration,
+        paymentIntentId: session.payment_intent,
+      });
+      property.bookings.push({ startDate: calcStartDate, endDate: calcEndDate });
+      await property.save({ validateBeforeSave: false });
+    }
     return session;
+  }
+
+  async getAllBookings(): Promise<Booking[]> {
+    const bookings = await this.bookingModel.find();
+    if (!bookings) {
+      throw new NotFoundException();
+    }
+    return bookings;
+  }
+
+  async getAllUserBooking(userId: string) {
+    const bookings = await this.bookingModel.find({ userId }).populate('propertyId');
+    if (!bookings) {
+      throw new NotFoundException();
+    }
+    return bookings;
+  }
+
+  async getAllBookingForOwner(ownerId: string) {
+    const bookings = await this.bookingModel
+      .find({ ownerId })
+      .populate('propertyId')
+      .populate({ path: 'userId', select: 'name' });
+    if (!bookings) {
+      throw new NotFoundException();
+    }
+    return bookings;
+  }
+
+  async deleteBooking(bookingId: string): Promise<string> {
+    const booking = await this.bookingModel.findByIdAndDelete(bookingId);
+    if (!booking) {
+      throw new NotFoundException();
+    }
+    const property = await this.propertyModel.findById(booking.propertyId);
+    const index = property.bookings.findIndex(
+      (b) =>
+        b.startDate.getTime() === booking.startDate.getTime() &&
+        b.endDate.getTime() === booking.endDate.getTime(),
+    );
+    if (index !== -1) {
+      property.bookings.splice(index, 1);
+      const sixDay = Math.ceil(
+        (booking.startDate.getTime() - booking.createdAt.getTime()) /
+          (1000 * 60 * 60 * 24),
+      );
+      if (sixDay >= 6) {
+        const stripe = require('stripe')(process.env.STRIP_SECRET);
+        await stripe.refunds.create({
+          payment_intent: booking.paymentIntentId,
+        });
+      }
+      await property.save({ validateBeforeSave: false });
+    }
+    return 'Booking deleted';
   }
 }

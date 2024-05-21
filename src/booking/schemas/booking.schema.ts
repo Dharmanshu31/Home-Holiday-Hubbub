@@ -3,14 +3,17 @@ import mongoose, { Document } from 'mongoose';
 
 @Schema()
 export class Booking extends Document {
-  @Prop({ type: mongoose.Schema.ObjectId })
+  @Prop({ type: mongoose.Schema.ObjectId, ref: 'Property' })
   propertyId: string;
 
-  @Prop({ type: mongoose.Schema.ObjectId })
+  @Prop({ type: mongoose.Schema.ObjectId, ref: 'User' })
   userId: string;
 
   @Prop({ type: mongoose.Schema.ObjectId })
   ownerId: string;
+
+  @Prop()
+  paymentIntentId: string;
 
   @Prop()
   startDate: Date;

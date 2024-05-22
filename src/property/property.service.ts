@@ -152,6 +152,11 @@ export class PropertyService {
           distance: 1,
           name: 1,
           'location.city': 1,
+          propertyType: 1,
+          'location.state': 1,
+          pricePerNight: 1,
+          ratingsAverage: 1,
+          images:1
         },
       },
     ]);

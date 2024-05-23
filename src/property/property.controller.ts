@@ -77,7 +77,7 @@ export class PropertyController {
   @Roles('admin', 'landlord')
   @UseInterceptors(PropertyValidationInterceptor)
   @HttpCode(204)
-  deleteProperty(@Param('id') id: string): void {
-    this.propertyService.deleteProperty(id);
+  deleteProperty(@Param('id') id: string): Promise<string> {
+    return this.propertyService.deleteProperty(id);
   }
 }

@@ -122,8 +122,9 @@ export class PropertyService {
     return property;
   }
 
-  async deleteProperty(id: string): Promise<Property> {
-    return await this.propertyModel.findByIdAndDelete(id);
+  async deleteProperty(id: string): Promise<string> {
+    await this.propertyModel.findByIdAndDelete(id);
+    return 'Property Deleted';
   }
 
   async getNearMe(latlag: string, unit: string): Promise<{}> {
@@ -156,7 +157,7 @@ export class PropertyService {
           'location.state': 1,
           pricePerNight: 1,
           ratingsAverage: 1,
-          images:1
+          images: 1,
         },
       },
     ]);

@@ -1,4 +1,9 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType, OmitType } from '@nestjs/mapped-types';
 import { CreatePropertyDto } from './create-property.dto';
+import { UpdateLocationDto } from './updateLoaction.dto';
 
-export class UpdatePropertyDto extends PartialType(CreatePropertyDto) {}
+export class UpdatePropertyDto extends OmitType(PartialType(CreatePropertyDto), [
+  'location',
+]) {
+  location: UpdateLocationDto;
+}

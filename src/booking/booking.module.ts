@@ -5,6 +5,7 @@ import { AuthModule } from './../auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Booking, bookingSchema } from './schemas/booking.schema';
 import { Property, propertySchema } from 'src/property/schemas/property.schema';
+import { WebhookController } from './webhook.controller';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { Property, propertySchema } from 'src/property/schemas/property.schema';
       { name: Property.name, schema: propertySchema },
     ]),
   ],
-  controllers: [BookingController],
+  controllers: [BookingController, WebhookController],
   providers: [BookingService],
 })
 export class BookingModule {}

@@ -104,4 +104,9 @@ export class ReviewService {
     }
     await this.averageRating(propertyId);
   }
+  //admin work
+  async numberOfReviews(): Promise<number> {
+    const reviews = await this.reviewModel.countDocuments();
+    return reviews;
+  }
 }

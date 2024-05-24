@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -21,6 +22,8 @@ import { Request } from 'express';
 import { UpdateuserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Query as ExpressQuery } from 'express-serve-static-core';
+import { UpdateuserByAdminDto } from './dto/updateUserAdmin.dto';
 
 @Controller('user')
 export class UserController {
@@ -57,30 +60,37 @@ export class UserController {
   }
 
   //admin work
-  @Get()
+  @Get('admin')
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('admin')
-  getAllUser(): Promise<User[]> {
-    return this.userService.getAllUser();
+  getAllUser(@Query() query: ExpressQuery): Promise<User[]> {
+    return this.userService.getAllUser(query);
   }
 
-  @Patch(':id')
+  @Patch('admin/:id')
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('admin')
   updateUserByAdmin(
-    @Body() updateUserDto: UpdateuserDto,
+    @Body() updateUserDto: UpdateuserByAdminDto,
     @Param('id') id: string,
   ): Promise<User> {
     return this.userService.updateUserByAdmin(updateUserDto, id);
   }
 
-  @Delete(':id')
+  @Delete('admin/:id')
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('admin')
   deleteUserByAdmin(@Param('id') id: string): Promise<void> {
     return this.userService.deleteUserByAdmin(id);
   }
+  @Get('admin/numberOfUsers')
+  @UseGuards(AuthGuard(), RoleGuard)
+  @Roles('admin')
+  numberOfUsers(): Promise<number> {
+    return this.userService.numberOfUsers();
+  }
 
+  //user wishlist
   @Get('wishList')
   @UseGuards(AuthGuard())
   getWishList(@Req() req: Request): Promise<User> {

@@ -24,6 +24,9 @@ export class Booking extends Document {
   @Prop()
   totalPrice: number;
 
+  @Prop()
+  status: string;
+
   @Prop({ default: Date.now() })
   createdAt: Date;
 }

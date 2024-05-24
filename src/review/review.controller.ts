@@ -64,4 +64,12 @@ export class ReviewController {
   ): Promise<void> {
     return this.reviewService.deleteReview(propertyId, reviewId);
   }
+
+  //admin
+  @Get('review/admin/numberOfReviews')
+  @UseGuards(AuthGuard(), RoleGuard)
+  @Roles('admin')
+  numberOfReviews(): Promise<number> {
+    return this.reviewService.numberOfReviews();
+  }
 }

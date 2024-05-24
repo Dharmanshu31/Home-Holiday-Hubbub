@@ -7,6 +7,8 @@ import { UpdateuserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import * as sharp from 'sharp';
 import * as path from 'path';
+import { Query } from 'express-serve-static-core';
+import { UpdateuserByAdminDto } from './dto/updateUserAdmin.dto';
 
 @Injectable()
 export class UserService {
@@ -78,11 +80,35 @@ export class UserService {
   }
 
   //admin work
-  async getAllUser(): Promise<User[]> {
-    const users = await this.userModel.find();
+  async getAllUser(query: Query): Promise<User[]> {
+    let filter: any = {};
+    if (query.role) {
+      filter.role = query.role;
+    }
+    if (query.keyword) {
+      filter.name = { $regex: query.keyword, $options: 'i' };
+    }
+    let que = this.userModel.find(filter);
+    if (query.page) {
+      const page = +query.page;
+      const limit = +query.limit;
+      const skip = (page - 1) * limit;
+      que = que.skip(skip).limit(limit);
+    }
+    if (query.sort) {
+      const sortBy = (query.sort as string).split(',').join(' ');
+      que = que.sort(sortBy);
+    } else {
+      que = que.sort('-createdAt');
+    }
+
+    const users = await que;
     return users;
   }
-  async updateUserByAdmin(updateUserDto: UpdateuserDto, id: string): Promise<User> {
+  async updateUserByAdmin(
+    updateUserDto: UpdateuserByAdminDto,
+    id: string,
+  ): Promise<User> {
     const user = await this.userModel.findByIdAndUpdate(id, updateUserDto, {
       new: true,
       runValidators: true,
@@ -105,6 +131,12 @@ export class UserService {
     }
   }
 
+  async numberOfUsers(): Promise<number> {
+    const user = await this.userModel.countDocuments();
+    return user;
+  }
+
+  //user wishlist
   async addWishList(propertyId: string, req: Request): Promise<User> {
     const user = await this.userModel.findById(req.user['_id']);
     if (user.wishList.includes(propertyId)) {
@@ -120,12 +152,15 @@ export class UserService {
   }
 
   async getOnlyWishList(req: Request): Promise<User> {
-    const user = await this.userModel.findById(req.user['_id']).select('wishList')
+    const user = await this.userModel.findById(req.user['_id']).select('wishList');
     return user;
   }
 
   async getWishList(req: Request): Promise<User> {
-    const user = await this.userModel.findById(req.user['_id']).select('wishList').populate('wishList');
+    const user = await this.userModel
+      .findById(req.user['_id'])
+      .select('wishList')
+      .populate('wishList');
     return user;
   }
 }

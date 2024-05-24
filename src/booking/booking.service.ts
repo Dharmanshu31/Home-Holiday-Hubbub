@@ -58,11 +58,38 @@ export class BookingService {
         endDate,
         totalPrice: +property.pricePerNight * duration,
         paymentIntentId: session.payment_intent,
+        status: 'pending',
       });
-      property.bookings.push({ startDate: calcStartDate, endDate: calcEndDate });
-      await property.save({ validateBeforeSave: false });
+      // property.bookings.push({ startDate: calcStartDate, endDate: calcEndDate });
+      // await property.save({ validateBeforeSave: false });
     }
     return session;
+  }
+
+  async handalWebHookBooking(event: Stripe.Event) {
+    switch (event.type) {
+      case 'payment_intent.succeeded': {
+        const paymentIntent = event.data.object;
+        const paymentIntentId = paymentIntent.id;
+        const booking = await this.bookingModel.findOne({ paymentIntentId });
+        if (booking) {
+          booking.status = 'completed';
+          booking.paymentIntentId = paymentIntentId;
+          await booking.save({ validateBeforeSave: false });
+        }
+        const property = await this.propertyModel.findById(booking.propertyId);
+        if (property) {
+          property.bookings.push({
+            startDate: new Date(booking.startDate),
+            endDate: new Date(booking.endDate),
+          });
+          await property.save({ validateBeforeSave: false });
+        }
+        break;
+      }
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
   }
 
   async getAllBookings(): Promise<Booking[]> {

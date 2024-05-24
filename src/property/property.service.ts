@@ -163,4 +163,10 @@ export class PropertyService {
     ]);
     return nearProperty;
   }
+
+  //admin work
+  async numberOfProperty(): Promise<number> {
+    const property = await this.propertyModel.countDocuments();
+    return property;
+  }
 }

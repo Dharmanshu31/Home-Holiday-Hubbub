@@ -80,4 +80,12 @@ export class PropertyController {
   deleteProperty(@Param('id') id: string): Promise<string> {
     return this.propertyService.deleteProperty(id);
   }
+
+  //admin
+  @Get('admin/numberOfProperty')
+  @UseGuards(AuthGuard(), RoleGuard)
+  @Roles('admin')
+  numberOfProperty(): Promise<number> {
+    return this.propertyService.numberOfProperty();
+  }
 }

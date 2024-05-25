@@ -48,6 +48,9 @@ export class BookingService {
           quantity: 1,
         },
       ],
+      metadata: {
+        propertyId,
+      },
     });
     if (session) {
       await this.bookingModel.create({
@@ -57,38 +60,41 @@ export class BookingService {
         startDate,
         endDate,
         totalPrice: +property.pricePerNight * duration,
-        paymentIntentId: session.payment_intent,
+        paymentIntentId: session.id,
         status: 'pending',
       });
-      // property.bookings.push({ startDate: calcStartDate, endDate: calcEndDate });
-      // await property.save({ validateBeforeSave: false });
     }
     return session;
   }
 
   async handalWebHookBooking(event: Stripe.Event) {
-    switch (event.type) {
-      case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object;
-        const paymentIntentId = paymentIntent.id;
-        const booking = await this.bookingModel.findOne({ paymentIntentId });
-        if (booking) {
-          booking.status = 'completed';
-          booking.paymentIntentId = paymentIntentId;
-          await booking.save({ validateBeforeSave: false });
+    let booking: Booking;
+    try {
+      switch (event.type) {
+        case 'checkout.session.completed': {
+          const paymentIntentId = event.data.object.id;
+          booking = await this.bookingModel.findOne({ paymentIntentId });
+          if (booking) {
+            booking.status = 'completed';
+            booking.paymentIntentId = event.data.object.payment_intent as string;
+            await booking.save({ validateBeforeSave: false });
+          }
+          const property = await this.propertyModel.findById(booking.propertyId);
+          if (property) {
+            property.bookings.push({
+              startDate: new Date(booking.startDate),
+              endDate: new Date(booking.endDate),
+            });
+            await property.save({ validateBeforeSave: false });
+          }
+          break;
         }
-        const property = await this.propertyModel.findById(booking.propertyId);
-        if (property) {
-          property.bookings.push({
-            startDate: new Date(booking.startDate),
-            endDate: new Date(booking.endDate),
-          });
-          await property.save({ validateBeforeSave: false });
-        }
-        break;
       }
-      default:
-        console.log(`Unhandled event type ${event.type}`);
+    } catch (err) {
+      if (booking) {
+        this.bookingModel.deleteOne({ id: booking._id });
+      }
+      throw new Error('Failed to process payment');
     }
   }
 
@@ -120,7 +126,7 @@ export class BookingService {
   }
 
   async deleteBooking(bookingId: string): Promise<string> {
-    const booking = await this.bookingModel.findByIdAndDelete(bookingId);
+    const booking = await this.bookingModel.findById(bookingId);
     if (!booking) {
       throw new NotFoundException();
     }
@@ -131,18 +137,25 @@ export class BookingService {
         b.endDate.getTime() === booking.endDate.getTime(),
     );
     if (index !== -1) {
-      property.bookings.splice(index, 1);
       const sixDay = Math.ceil(
         (booking.startDate.getTime() - booking.createdAt.getTime()) /
           (1000 * 60 * 60 * 24),
       );
       if (sixDay >= 6) {
         const stripe = require('stripe')(process.env.STRIP_SECRET);
-        await stripe.refunds.create({
+        const refund = await stripe.refunds.create({
           payment_intent: booking.paymentIntentId,
         });
+        if (refund) {
+          property.bookings.splice(index, 1);
+          await property.save({ validateBeforeSave: false });
+          await booking.deleteOne();
+        }
+      } else {
+        throw new NotFoundException(
+          "Can't Refund When booking have lessthen 6 Day remain",
+        );
       }
-      await property.save({ validateBeforeSave: false });
     }
     return 'Booking deleted';
   }

@@ -164,6 +164,18 @@ export class PropertyService {
     return nearProperty;
   }
 
+  async getByDistance(latlag: string, distance: string): Promise<{}> {
+    const [lat, lag]: string[] = latlag.split(',');
+    const radius = +distance / 6371;
+    if (isNaN(radius) || radius < 0) {
+      throw new Error('Invalid radius');
+    }
+    const distanceProperty = await this.propertyModel.find({
+      location: { $geoWithin: { $centerSphere: [[lag, lat], radius] } },
+    });
+    return distanceProperty;
+  }
+
   //admin work
   async numberOfProperty(): Promise<number> {
     const property = await this.propertyModel.countDocuments();

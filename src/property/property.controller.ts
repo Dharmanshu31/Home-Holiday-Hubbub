@@ -47,6 +47,15 @@ export class PropertyController {
   getNearMe(@Param('latlag') latlag: string, @Param('unit') unit: string): Promise<{}> {
     return this.propertyService.getNearMe(latlag, unit);
   }
+
+  @Get('near-me/distance/:distance/:latlag/')
+  getByDistance(
+    @Param('latlag') latlag: string,
+    @Param('distance') distance: string,
+  ): Promise<{}> {
+    return this.propertyService.getByDistance(latlag, distance);
+  }
+
   @Post()
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('admin', 'landlord')

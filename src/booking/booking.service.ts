@@ -99,7 +99,10 @@ export class BookingService {
   }
 
   async getAllBookings(): Promise<Booking[]> {
-    const bookings = await this.bookingModel.find();
+    const bookings = await this.bookingModel
+      .find({ status: 'completed' })
+      .populate('propertyId')
+      .populate({ path: 'userId', select: 'name' });
     if (!bookings) {
       throw new NotFoundException();
     }
@@ -107,7 +110,9 @@ export class BookingService {
   }
 
   async getAllUserBooking(userId: string) {
-    const bookings = await this.bookingModel.find({ userId }).populate('propertyId');
+    const bookings = await this.bookingModel
+      .find({ userId, status: 'completed' })
+      .populate('propertyId');
     if (!bookings) {
       throw new NotFoundException();
     }
@@ -116,7 +121,7 @@ export class BookingService {
 
   async getAllBookingForOwner(ownerId: string) {
     const bookings = await this.bookingModel
-      .find({ ownerId })
+      .find({ ownerId, status: 'completed' })
       .populate('propertyId')
       .populate({ path: 'userId', select: 'name' });
     if (!bookings) {

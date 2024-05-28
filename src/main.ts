@@ -15,13 +15,20 @@ async function bootstrap() {
   app.use(cookieParser());
   // app.use(
   //   rateLimit({
-  //     windowMs: 15 * 60 * 1000,
-  //     max: 100,
+  //     windowMs: 60 * 60 * 1000,
+  //     max: 10000,
+  //     message: 'To Many Request From Same IP Try After Few 1 Hours',
   //   }),
   // );
   app.use(helmet());
+
+  //for NoSQL Attack
   app.use(mongoSanitize());
+
+  //for xss attack
   app.use(xss());
+
+  //parameter polution
   app.use(
     hpp({
       whitelist: [

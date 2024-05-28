@@ -33,6 +33,14 @@ export class BookingController {
     return this.bookingService.getAllUserBooking(userId);
   }
 
+  @Get('property/:propertyId')
+  @UseGuards(AuthGuard())
+  getAllBookingsWithPropertyId(
+    @Param('propertyId') propertyId: string,
+  ): Promise<Booking[]> {
+    return this.bookingService.getAllBookingsWithPropertyId(propertyId);
+  }
+
   @Get('owner/:ownerId')
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('landlord', 'admin')

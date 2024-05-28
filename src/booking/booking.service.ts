@@ -118,6 +118,13 @@ export class BookingService {
     }
     return bookings;
   }
+  async getAllBookingsWithPropertyId(propertyId: string) {
+    const bookings = await this.bookingModel.find({ propertyId, status: 'completed' }).select('propertyId');
+    if (!bookings) {
+      throw new NotFoundException();
+    }
+    return bookings;
+  }
 
   async getAllBookingForOwner(ownerId: string) {
     const bookings = await this.bookingModel

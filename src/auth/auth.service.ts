@@ -47,26 +47,16 @@ export class AuthService {
       });
     }
     const token = await this.jwtService.signAsync({ id: user._id, role: user.role });
-    // res.cookie('jwt', token, {
-    //   secure: true,
-    //   httpOnly: true,
-    //   expires: new Date(
-    //     Date.now() + parseInt(process.env.JWT_COOKIE_EXP) * 24 * 60 * 60 * 1000,
-    //   ),
-    // });
     return { token, user };
   }
 
-  async forgetPassword(
-    forgetPasswordDto: ForgetPasswordDto,
-    req: Request,
-  ): Promise<string> {
+  async forgetPassword(forgetPasswordDto: ForgetPasswordDto): Promise<string> {
     const user = await this.userModel.findOne({ email: forgetPasswordDto.email });
     if (!user) throw new UnauthorizedException('User Not Exist!!!');
     const randomToken = user.randomToken();
     user.save({ validateBeforeSave: false });
 
-    const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${randomToken}`;
+    const resetUrl = `http://localhost:5173/resetPassword/${randomToken}`;
 
     const message = `
     <p>You are receiving this email because you (or someone else) has requested the reset of a password. Please click on the following link to complete the process:</p>
@@ -92,7 +82,6 @@ export class AuthService {
   async resetPassword(
     token: string,
     resetPasswordDto: ResetPasswordDto,
-    res: Response,
   ): Promise<{ token: string; user: User }> {
     const hashToken = crypto.createHash('sha256').update(token).digest('hex');
     const user = await this.userModel
@@ -102,9 +91,6 @@ export class AuthService {
       })
       .select('+password');
     if (!user) {
-      user.passwordResetToken = undefined;
-      user.resetExpireTime = undefined;
-      user.save({ validateBeforeSave: false });
       throw new BadRequestException({
         message:
           'Invalid token or the reset link has expired. Please request a new password reset link.',
@@ -117,13 +103,6 @@ export class AuthService {
     user.passwordChangeAt = new Date(Date.now() - 1000);
     await user.save();
     const Jwttoken = await this.jwtService.signAsync({ id: user._id });
-    res.cookie('jwt', Jwttoken, {
-      secure: true,
-      httpOnly: true,
-      expires: new Date(
-        Date.now() + parseInt(process.env.JWT_COOKIE_EXP) * 24 * 60 * 60 * 1000,
-      ),
-    });
     return { token: Jwttoken, user };
   }
 }

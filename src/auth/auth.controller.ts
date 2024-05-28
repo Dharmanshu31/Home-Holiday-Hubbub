@@ -40,17 +40,15 @@ export class AuthController {
   @Post('forgetPassword')
   forgetPassword(
     @Body() forgetPasswordDto: ForgetPasswordDto,
-    @Req() req: Request,
   ): Promise<string> {
-    return this.authService.forgetPassword(forgetPasswordDto, req);
+    return this.authService.forgetPassword(forgetPasswordDto);
   }
 
   @Patch('resetPassword/:token')
   resetPassword(
     @Param('token') token: string,
     @Body() resetPasswordDto: ResetPasswordDto,
-    @Res() res: Response,
   ): Promise<{ token: string; user: User }> {
-    return this.authService.resetPassword(token, resetPasswordDto, res);
+    return this.authService.resetPassword(token, resetPasswordDto);
   }
 }

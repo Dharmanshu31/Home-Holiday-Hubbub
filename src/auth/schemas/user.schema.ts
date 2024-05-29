@@ -71,6 +71,9 @@ export class User extends Document {
   @Prop()
   resetExpireTime: Date;
 
+  @Prop({ default: true })
+  isActive: boolean;
+
   comparePassword: (providedPassword: string, userPassword: string) => Promise<boolean>;
 
   randomToken: () => string;

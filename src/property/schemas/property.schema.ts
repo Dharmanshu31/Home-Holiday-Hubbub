@@ -90,7 +90,6 @@ export class Property extends Document {
   amenities: string[];
   @Prop({
     default: 0,
-    min: [1, 'Rating must be above 1.0'],
     max: [5, 'Rating must be below 5.0'],
   })
   ratingsAverage: Number;

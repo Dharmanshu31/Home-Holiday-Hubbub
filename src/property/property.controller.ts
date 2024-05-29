@@ -32,9 +32,9 @@ export class PropertyController {
   @Get()
   async getAllProperty(
     @Query() query: ExpressQuery,
-  ): Promise<{ result: number; properties: Property[] }> {
+  ): Promise<{ properties: Property[]; total: number }> {
     const properties = await this.propertyService.getAllproperty(query);
-    return { result: properties.length, properties };
+    return properties;
   }
 
   @Get(':id')
@@ -44,22 +44,27 @@ export class PropertyController {
   }
 
   @Get('near-me/distance/:latlag/unit/:unit')
-  getNearMe(@Param('latlag') latlag: string, @Param('unit') unit: string): Promise<{}> {
-    return this.propertyService.getNearMe(latlag, unit);
+  getNearMe(
+    @Param('latlag') latlag: string,
+    @Param('unit') unit: string,
+    @Query() query: ExpressQuery,
+  ): Promise<{}> {
+    return this.propertyService.getNearMe(latlag, unit, query);
   }
 
   @Get('near-me/distance/:distance/:latlag/')
   getByDistance(
     @Param('latlag') latlag: string,
     @Param('distance') distance: string,
+    @Query() query: ExpressQuery,
   ): Promise<{}> {
-    return this.propertyService.getByDistance(latlag, distance);
+    return this.propertyService.getByDistance(latlag, distance, query);
   }
 
   @Post()
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('admin', 'landlord')
-  @UseInterceptors(FilesInterceptor('images', 10))
+  @UseInterceptors(FilesInterceptor('images', 25))
   createProperty(
     @UploadedFiles() files: Express.Multer.File[],
     @Body() property: CreatePropertyDto,
@@ -71,7 +76,7 @@ export class PropertyController {
   @Patch(':id')
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('admin', 'landlord')
-  @UseInterceptors(FilesInterceptor('images', 5))
+  @UseInterceptors(FilesInterceptor('images', 25))
   @UseInterceptors(PropertyValidationInterceptor)
   updateProperty(
     @UploadedFiles() files: Express.Multer.File[],

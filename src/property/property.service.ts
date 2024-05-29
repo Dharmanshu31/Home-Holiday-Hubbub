@@ -49,7 +49,7 @@ export class PropertyService {
     return newProperty;
   }
 
-  async getAllproperty(query: Query): Promise<Property[]> {
+  async getAllproperty(query: Query): Promise<{ properties: Property[]; total: number }> {
     let filter: {} = {};
     const newQuery: {} = { ...query };
     const notAllowField: string[] = ['page', 'sort', 'limit', 'fields'];
@@ -75,6 +75,8 @@ export class PropertyService {
     } else {
       que = que.select('-__v');
     }
+    const total = await this.propertyModel.countDocuments(filter);
+
     if (query.page) {
       const page = +query.page;
       const limit = +query.limit;
@@ -82,7 +84,7 @@ export class PropertyService {
       que = que.skip(skip).limit(limit);
     }
     const properties = await que;
-    return properties;
+    return { properties, total };
   }
 
   async getOneProperty(id: string): Promise<Property> {
@@ -127,14 +129,17 @@ export class PropertyService {
     return 'Property Deleted';
   }
 
-  async getNearMe(latlag: string, unit: string): Promise<{}> {
+  async getNearMe(latlag: string, unit: string, query: Query): Promise<{}> {
     const [lat, lag]: string[] = latlag.split(',');
     const multipiler: number = unit === 'km' ? 0.001 : 0.000621371;
     const data = await axios.get(
       `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lag}&localityLanguage=en`,
     );
     const city: string = data.data.city;
-    const nearProperty = await this.propertyModel.aggregate([
+
+    const finalQuery = [];
+
+    finalQuery.push(
       {
         $geoNear: {
           near: {
@@ -158,21 +163,41 @@ export class PropertyService {
           pricePerNight: 1,
           ratingsAverage: 1,
           images: 1,
+          owner: 1,
         },
       },
+    );
+
+    const page = +query.page;
+    const limit = +query.limit;
+    const skip = (page - 1) * limit;
+
+    const countQuery = [...finalQuery, { $count: 'total' }];
+
+    const nearProperty = await Promise.all([
+      this.propertyModel.aggregate(finalQuery).skip(skip).limit(limit),
+      this.propertyModel.aggregate(countQuery),
     ]);
+
     return nearProperty;
   }
 
-  async getByDistance(latlag: string, distance: string): Promise<{}> {
+  async getByDistance(latlag: string, distance: string, query: Query): Promise<{}> {
     const [lat, lag]: string[] = latlag.split(',');
     const radius = +distance / 6371;
     if (isNaN(radius) || radius < 0) {
       throw new Error('Invalid radius');
     }
-    const distanceProperty = await this.propertyModel.find({
+    const page = +query.page;
+    const limit = +query.limit;
+    const skip = (page - 1) * limit;
+    const newQuery = {
       location: { $geoWithin: { $centerSphere: [[lag, lat], radius] } },
-    });
+    };
+    const distanceProperty = await Promise.all([
+      this.propertyModel.find(newQuery).skip(skip).limit(limit),
+      this.propertyModel.countDocuments(newQuery),
+    ]);
     return distanceProperty;
   }
 

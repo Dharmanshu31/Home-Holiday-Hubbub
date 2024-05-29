@@ -15,7 +15,7 @@ export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
   async getMe(req: Request): Promise<User> {
-    const user = await this.userModel.findById(req.user['_id']);
+    const user = await this.userModel.findOne({ _id: req.user['_id'], isActive: true });
     if (!user) {
       throw new NotFoundException({
         message: 'No User found with that ID. Please check the ID and try again. ',
@@ -56,7 +56,9 @@ export class UserService {
   }
 
   async deleteMe(req: Request): Promise<void> {
-    const user = await this.userModel.findByIdAndDelete(req.user['_id']);
+    const user = await this.userModel.findOne({ _id: req.user['_id'] });
+    user.isActive = false;
+    await user.save({ validateBeforeSave: false });
     if (!user) {
       throw new NotFoundException({
         message: 'No User found with that ID. Please check the ID and try again. ',

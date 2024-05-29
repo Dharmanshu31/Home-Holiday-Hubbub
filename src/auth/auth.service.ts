@@ -46,6 +46,8 @@ export class AuthService {
         message: 'Email or Password is InValid',
       });
     }
+    user.isActive = true;
+    user.save({ validateBeforeSave: false });
     const token = await this.jwtService.signAsync({ id: user._id, role: user.role });
     return { token, user };
   }

@@ -5,6 +5,7 @@ import { Model, Types } from 'mongoose';
 import { Request } from 'express';
 import { Property } from 'src/property/schemas/property.schema';
 import Stripe from 'stripe';
+import { sendEmail } from 'src/utils/email';
 @Injectable()
 export class BookingService {
   constructor(
@@ -29,6 +30,7 @@ export class BookingService {
       payment_method_types: ['card'],
       success_url: `http://localhost:5173/trip-history/${req.user['_id']}`,
       cancel_url: `http://localhost:5173/`,
+      expires_at: Math.floor(Date.now() / 1000) + 1800,
       customer_email: req.user['email'],
       client_reference_id: propertyId,
       mode: 'payment',
@@ -39,9 +41,6 @@ export class BookingService {
             product_data: {
               name: `${property.name} Home`,
               description: property.description,
-              images: [
-                'https://images.pexels.com/photos/2034335/pexels-photo-2034335.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=650',
-              ],
             },
             unit_amount: +property.pricePerNight * 100 * duration,
           },
@@ -53,7 +52,7 @@ export class BookingService {
       },
     });
     if (session) {
-      await this.bookingModel.create({
+      const booking = await this.bookingModel.create({
         userId: req.user['_id'],
         propertyId,
         ownerId: property.owner,
@@ -63,6 +62,36 @@ export class BookingService {
         paymentIntentId: session.id,
         status: 'pending',
       });
+
+      const propertytoCheck = await this.propertyModel.findById(booking.propertyId);
+      if (propertytoCheck) {
+        propertytoCheck.bookings.push({
+          startDate: new Date(booking.startDate),
+          endDate: new Date(booking.endDate),
+        });
+        await propertytoCheck.save({ validateBeforeSave: false });
+      }
+
+      setTimeout(
+        async () => {
+          const bookingToCheck = await this.bookingModel.findById(booking._id);
+          if (bookingToCheck && bookingToCheck.status === 'pending') {
+            const startDate = new Date(booking.startDate);
+            const endDate = new Date(booking.endDate);
+            const index = propertytoCheck.bookings.findIndex(
+              (booking) =>
+                booking.startDate.getTime() === startDate.getTime() &&
+                booking.endDate.getTime() === endDate.getTime(),
+            );
+            if (index !== -1) {
+              propertytoCheck.bookings.splice(index, 1);
+              await propertytoCheck.save({ validateBeforeSave: false });
+              await bookingToCheck.deleteOne();
+            }
+          }
+        },
+        30 * 60 * 1000,
+      );
     }
     return session;
   }
@@ -73,19 +102,34 @@ export class BookingService {
       switch (event.type) {
         case 'checkout.session.completed': {
           const paymentIntentId = event.data.object.id;
-          booking = await this.bookingModel.findOne({ paymentIntentId });
+          booking = await this.bookingModel
+            .findOne({ paymentIntentId })
+            .populate({ path: 'userId', select: 'email' })
+            .populate({ path: 'ownerId', select: 'email' });
           if (booking) {
             booking.status = 'completed';
             booking.paymentIntentId = event.data.object.payment_intent as string;
             await booking.save({ validateBeforeSave: false });
-          }
-          const property = await this.propertyModel.findById(booking.propertyId);
-          if (property) {
-            property.bookings.push({
-              startDate: new Date(booking.startDate),
-              endDate: new Date(booking.endDate),
+
+            const user = booking.userId as any;
+            const owner = booking.ownerId as any;
+            const message = `
+                  <p>This is confirmation Email for Success full Booking</p>
+                  <p>you Booking is from ${booking.startDate} to ${booking.endDate}</p>
+                  <p><b>user email --${user.email}</b></p>
+                  <p><b>user email --${owner.email}</b></p>
+                   `;
+
+            await sendEmail({
+              email: user.email,
+              subject: 'Boooking Detail',
+              html: message,
             });
-            await property.save({ validateBeforeSave: false });
+            await sendEmail({
+              email: owner.email,
+              subject: 'Booking Detail',
+              html: message,
+            });
           }
           break;
         }
@@ -140,7 +184,10 @@ export class BookingService {
   }
 
   async deleteBooking(bookingId: string): Promise<string> {
-    const booking = await this.bookingModel.findById(bookingId);
+    const booking = await this.bookingModel
+      .findById(bookingId)
+      .populate({ path: 'userId', select: 'email' })
+      .populate({ path: 'ownerId', select: 'email' });
     if (!booking) {
       throw new NotFoundException();
     }
@@ -160,10 +207,30 @@ export class BookingService {
         const refund = await stripe.refunds.create({
           payment_intent: booking.paymentIntentId,
         });
+        const user = booking.userId as any;
+        const owner = booking.ownerId as any;
+        const message = `
+                  <p>This is confirmation Email for Cancelation of Booking of ${property.name}</p>
+                  <p>You have book ${property.name} from ${booking.startDate} to ${booking.endDate} is cancel </p>
+                  <p><b>You will get your Refund in 15 Working Day</b></p>
+                  <p><b>user email --${user.email}</b></p>
+                  <p><b>user email --${owner.email}</b></p>
+                   `;
+
         if (refund) {
           property.bookings.splice(index, 1);
           await property.save({ validateBeforeSave: false });
           await booking.deleteOne();
+          await sendEmail({
+            email: user.email,
+            subject: 'Booking Cancelation Confirmation Mail',
+            html: message,
+          });
+          await sendEmail({
+            email: owner.email,
+            subject: 'Booking Cancelation Confirmation Mail',
+            html: message,
+          });
         }
       } else {
         throw new NotFoundException(

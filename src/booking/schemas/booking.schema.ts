@@ -17,7 +17,11 @@ export class Booking extends Document {
   })
   userId: string;
 
-  @Prop({ type: mongoose.Schema.ObjectId, required: [true, 'Must Have owner Id'] })
+  @Prop({
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: [true, 'Must Have owner Id'],
+  })
   ownerId: string;
 
   @Prop()

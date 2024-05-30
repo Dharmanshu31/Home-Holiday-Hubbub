@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Booking } from './schemas/booking.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Request } from 'express';
 import { Property } from 'src/property/schemas/property.schema';
 import Stripe from 'stripe';
@@ -119,7 +119,9 @@ export class BookingService {
     return bookings;
   }
   async getAllBookingsWithPropertyId(propertyId: string) {
-    const bookings = await this.bookingModel.find({ propertyId, status: 'completed' }).select('propertyId');
+    const bookings = await this.bookingModel
+      .find({ propertyId, status: 'completed' })
+      .select('propertyId');
     if (!bookings) {
       throw new NotFoundException();
     }
@@ -170,5 +172,43 @@ export class BookingService {
       }
     }
     return 'Booking deleted';
+  }
+
+  //total earning of user
+  async getTotalEarning(ownerId: string) {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const result = await this.bookingModel.aggregate([
+      {
+        $match: { ownerId: new Types.ObjectId(ownerId), status: 'completed' },
+      },
+      {
+        $facet: {
+          currentMonth: [
+            { $match: { createdAt: { $gte: startOfMonth } } },
+            { $group: { _id: null, totalEarning: { $sum: '$totalPrice' } } },
+          ],
+          currentYear: [
+            { $match: { createdAt: { $gte: startOfYear } } },
+            { $group: { _id: null, totalEarning: { $sum: '$totalPrice' } } },
+          ],
+          lifetime: [{ $group: { _id: null, totalEarning: { $sum: '$totalPrice' } } }],
+        },
+      },
+    ]);
+
+    if (!result) {
+      return {
+        currentMonth: 0,
+        currentYear: 0,
+        lifetime: 0,
+      };
+    }
+    return {
+      currentMonth: result[0].currentMonth[0]?.totalEarning || 0,
+      currentYear: result[0].currentYear[0]?.totalEarning || 0,
+      lifetime: result[0]?.lifetime[0]?.totalEarning || 0,
+    };
   }
 }

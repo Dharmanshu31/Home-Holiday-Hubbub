@@ -48,6 +48,14 @@ export class BookingController {
     return this.bookingService.getAllBookingForOwner(ownerId);
   }
 
+  @Get('owner/:ownerId/earning')
+  @UseGuards(AuthGuard(), RoleGuard)
+  @Roles('landlord','admin')
+  getTotalEarning(@Param('ownerId') ownerId:string){
+    return this.bookingService.getTotalEarning(ownerId)
+  }
+
+
   @Delete('/:bookingId')
   @UseGuards(AuthGuard())
   deleteBooking(@Param('bookingId') bookingId: string): Promise<string> {

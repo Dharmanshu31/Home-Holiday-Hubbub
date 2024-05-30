@@ -50,39 +50,51 @@ export class PropertyService {
   }
 
   async getAllproperty(query: Query): Promise<{ properties: Property[]; total: number }> {
-    let filter: {} = {};
-    const newQuery: {} = { ...query };
+    // Clone and clean the query object
+    const newQuery = { ...query };
     const notAllowField: string[] = ['page', 'sort', 'limit', 'fields'];
     notAllowField.forEach((el): boolean => delete newQuery[el]);
-    let queryStr: string = JSON.stringify(newQuery);
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match): string => `$${match}`);
-    filter = JSON.parse(queryStr);
+
+    // Build the filter object
+    let filter: any = {};
     if (query.keyword) {
       filter = { name: { $regex: query.keyword, $options: 'i' } };
+    } else {
+      let queryStr: string = JSON.stringify(newQuery);
+      queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match): string => `$${match}`);
+      filter = JSON.parse(queryStr);
     }
 
     let que = this.propertyModel.find(filter);
 
+    // Apply sorting
     if (query.sort) {
       const sortBy = (query.sort as string).split(',').join(' ');
       que = que.sort(sortBy);
     } else {
       que = que.sort('-createdAt');
     }
+
+    // Apply field selection
     if (query.fields) {
       const fields = (query.fields as string).split(',').join(' ');
       que = que.select(fields);
     } else {
       que = que.select('-__v');
     }
+
+    // Get the total number of documents
     const total = await this.propertyModel.countDocuments(filter);
 
-    if (query.page) {
+    // Apply pagination
+    if (query.page && query.limit) {
       const page = +query.page;
       const limit = +query.limit;
       const skip = (page - 1) * limit;
       que = que.skip(skip).limit(limit);
     }
+
+    // Execute the query and return the results
     const properties = await que;
     return { properties, total };
   }

@@ -11,6 +11,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Property } from '../schemas/property.schema';
 
+//interceptor not found property
 @Injectable()
 export class PropertyValidationInterceptor implements NestInterceptor {
   constructor(

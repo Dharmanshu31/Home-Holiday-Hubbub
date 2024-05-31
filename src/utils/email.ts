@@ -1,5 +1,6 @@
 import * as nodemailer from 'nodemailer';
 
+//send email with help of nodemailer
 export const sendEmail = async (mailData) => {
   const transporter: nodemailer.Transporter = nodemailer.createTransport({
     host: process.env.MAIL_HOST,

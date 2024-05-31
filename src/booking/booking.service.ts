@@ -13,6 +13,7 @@ export class BookingService {
     @InjectModel(Property.name) private propertyModel: Model<Property>,
   ) {}
 
+  //create session of strip and make booking and frizz the date for 30min
   async getBookingSession(
     req: Request,
     propertyId: string,
@@ -96,6 +97,7 @@ export class BookingService {
     return session;
   }
 
+  //webHook hander of strip which chnage the status of payment
   async handalWebHookBooking(event: Stripe.Event) {
     let booking: Booking;
     try {
@@ -142,6 +144,7 @@ export class BookingService {
     }
   }
 
+  //get all booking for admin
   async getAllBookings(): Promise<Booking[]> {
     const bookings = await this.bookingModel
       .find({ status: 'completed' })
@@ -153,6 +156,7 @@ export class BookingService {
     return bookings;
   }
 
+  //get booking of user
   async getAllUserBooking(userId: string) {
     const bookings = await this.bookingModel
       .find({ userId, status: 'completed' })
@@ -162,6 +166,9 @@ export class BookingService {
     }
     return bookings;
   }
+
+
+  //show booking on base of property 
   async getAllBookingsWithPropertyId(propertyId: string) {
     const bookings = await this.bookingModel
       .find({ propertyId, status: 'completed' })
@@ -172,6 +179,7 @@ export class BookingService {
     return bookings;
   }
 
+  //get booking for owner
   async getAllBookingForOwner(ownerId: string) {
     const bookings = await this.bookingModel
       .find({ ownerId, status: 'completed' })
@@ -183,6 +191,7 @@ export class BookingService {
     return bookings;
   }
 
+  //delete Booking and provide refund
   async deleteBooking(bookingId: string): Promise<string> {
     const booking = await this.bookingModel
       .findById(bookingId)

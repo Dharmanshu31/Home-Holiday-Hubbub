@@ -81,6 +81,7 @@ export class User extends Document {
 
 export const userSchema = SchemaFactory.createForClass(User);
 
+//encrypt user passoword on save action
 userSchema.pre('save', async function (next: Function) {
   if (this.isModified('password')) {
     this.password = await bcrypt.hash(this.password, 12);
@@ -89,6 +90,7 @@ userSchema.pre('save', async function (next: Function) {
   next();
 });
 
+//check the password of user is valid or not
 userSchema.methods.comparePassword = async function (
   providedPassword: string,
   userPassword: string,
@@ -96,6 +98,7 @@ userSchema.methods.comparePassword = async function (
   return await bcrypt.compare(providedPassword, userPassword);
 };
 
+//generate token for forget password
 userSchema.methods.randomToken = function () {
   const randomToken = crypto.randomBytes(32).toString('hex');
   this.passwordResetToken = crypto.createHash('sha256').update(randomToken).digest('hex');

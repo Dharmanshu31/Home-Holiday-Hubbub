@@ -14,6 +14,7 @@ import { UpdateuserByAdminDto } from './dto/updateUserAdmin.dto';
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
+  //get current login user
   async getMe(req: Request): Promise<User> {
     const user = await this.userModel.findOne({ _id: req.user['_id'], isActive: true });
     if (!user) {
@@ -24,6 +25,7 @@ export class UserService {
     return user;
   }
 
+  //update user
   async updateMe(
     updateUserDto: UpdateuserDto,
     req: Request,
@@ -55,6 +57,7 @@ export class UserService {
     return user;
   }
 
+  //soft deletion of user 
   async deleteMe(req: Request): Promise<void> {
     const user = await this.userModel.findOne({ _id: req.user['_id'] });
     user.isActive = false;
@@ -66,6 +69,7 @@ export class UserService {
     }
   }
 
+  //update user password
   async updatePassword(updatePasswordDto: UpdatePasswordDto, req: Request) {
     const user = await this.userModel.findById(req.user['_id']).select('+password');
     if (!(await user.comparePassword(updatePasswordDto.currentPassword, user.password))) {
@@ -82,6 +86,8 @@ export class UserService {
   }
 
   //admin work
+
+  //pagination and filter user
   async getAllUser(query: Query): Promise<User[]> {
     let filter: any = {};
     if (query.role) {
@@ -107,6 +113,8 @@ export class UserService {
     const users = await que;
     return users;
   }
+
+  //update user 
   async updateUserByAdmin(
     updateUserDto: UpdateuserByAdminDto,
     id: string,
@@ -124,6 +132,7 @@ export class UserService {
     return user;
   }
 
+  //delete user hard deletion
   async deleteUserByAdmin(id: string): Promise<void> {
     const user = await this.userModel.findByIdAndDelete(id);
     if (!user) {
@@ -133,12 +142,15 @@ export class UserService {
     }
   }
 
+  //number of user
   async numberOfUsers(): Promise<number> {
     const user = await this.userModel.countDocuments();
     return user;
   }
 
   //user wishlist
+
+  //add wishlist
   async addWishList(propertyId: string, req: Request): Promise<User> {
     const user = await this.userModel.findById(req.user['_id']);
     if (user.wishList.includes(propertyId)) {
@@ -153,11 +165,13 @@ export class UserService {
     return user;
   }
 
+  //get user wishlist id
   async getOnlyWishList(req: Request): Promise<User> {
     const user = await this.userModel.findById(req.user['_id']).select('wishList');
     return user;
   }
 
+  //get wishlist with data
   async getWishList(req: Request): Promise<User> {
     const user = await this.userModel
       .findById(req.user['_id'])

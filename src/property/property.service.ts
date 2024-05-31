@@ -14,6 +14,7 @@ const axios = require('axios');
 export class PropertyService {
   constructor(@InjectModel(Property.name) private propertyModel: Model<Property>) {}
 
+  //create property
   async createProperty(
     property: CreatePropertyDto,
     req: Request,
@@ -49,6 +50,7 @@ export class PropertyService {
     return newProperty;
   }
 
+  //get property with filter
   async getAllproperty(query: Query): Promise<{ properties: Property[]; total: number }> {
     // Clone and clean the query object
     const newQuery = { ...query };
@@ -99,6 +101,7 @@ export class PropertyService {
     return { properties, total };
   }
 
+  //get one property
   async getOneProperty(id: string): Promise<Property> {
     const property = await this.propertyModel
       .findById(id)
@@ -106,6 +109,8 @@ export class PropertyService {
     return property;
   }
 
+
+  //update property
   async updateProperty(
     id: string,
     updateDto: UpdatePropertyDto,
@@ -136,11 +141,13 @@ export class PropertyService {
     return property;
   }
 
+  //delete property
   async deleteProperty(id: string): Promise<string> {
     await this.propertyModel.findByIdAndDelete(id);
     return 'Property Deleted';
   }
 
+  //get property near me base on city
   async getNearMe(latlag: string, unit: string, query: Query): Promise<{}> {
     const [lat, lag]: string[] = latlag.split(',');
     const multipiler: number = unit === 'km' ? 0.001 : 0.000621371;
@@ -194,6 +201,7 @@ export class PropertyService {
     return nearProperty;
   }
 
+  //get property with the range
   async getByDistance(latlag: string, distance: string, query: Query): Promise<{}> {
     const [lat, lag]: string[] = latlag.split(',');
     const radius = +distance / 6371;

@@ -1,4 +1,7 @@
 const nodeGeocoder = require('node-geocoder');
+
+
+//set the user lat and lag if not provided by user
 export class AddressFormate {
   static async getPropertyLocation(address: string) {
     try {

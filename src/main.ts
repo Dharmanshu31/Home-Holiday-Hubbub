@@ -10,8 +10,14 @@ import * as hpp from 'hpp';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
+  //handel cors 
   app.enableCors();
+
+  //provide globle error validtion
   app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
+
+  //parse cookie data
   app.use(cookieParser());
   // app.use(
   //   rateLimit({
@@ -20,6 +26,8 @@ async function bootstrap() {
   //     message: 'To Many Request From Same IP Try After Few 1 Hours',
   //   }),
   // );
+
+  //use helmet for secure header
   app.use(helmet());
 
   //for NoSQL Attack
@@ -28,7 +36,7 @@ async function bootstrap() {
   //for xss attack
   app.use(xss());
 
-  //parameter polution
+  //parameter polution for same fileds
   app.use(
     hpp({
       whitelist: [

@@ -6,7 +6,6 @@ import { CreateUserDto } from './dto/signUp.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ForgetPasswordDto } from './dto/forgetPassword.dto';
-import { Request, Response } from 'express';
 import { sendEmail } from 'src/utils/email';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import * as crypto from 'crypto';
@@ -19,6 +18,8 @@ export class AuthService {
     @InjectModel(User.name) private userModel: Model<User>,
     private jwtService: JwtService,
   ) {}
+  
+  //signup user
   async signUp(createUser: CreateUserDto, file: Express.Multer.File): Promise<User> {
     if (file) {
       const filename = `user-${createUser.name}-${Date.now()}.jpeg`;
@@ -37,6 +38,7 @@ export class AuthService {
     return user;
   }
 
+  //login user
   async login(loginDto: LoginDto): Promise<{ token: string; user: User }> {
     const user = await this.userModel
       .findOne({ email: loginDto.email })
@@ -52,6 +54,7 @@ export class AuthService {
     return { token, user };
   }
 
+  //forget passowrd
   async forgetPassword(forgetPasswordDto: ForgetPasswordDto): Promise<string> {
     const user = await this.userModel.findOne({ email: forgetPasswordDto.email });
     if (!user) throw new UnauthorizedException('User Not Exist!!!');
@@ -81,6 +84,7 @@ export class AuthService {
     }
   }
 
+  //reset password
   async resetPassword(
     token: string,
     resetPasswordDto: ResetPasswordDto,

@@ -14,6 +14,7 @@ export class ReviewService {
     @InjectModel(Property.name) private propertyModel: Model<Property>,
   ) {}
 
+  //calculate and update the rating of property base on user review
   async averageRating(propertyId: string): Promise<void> {
     const stats = await this.reviewModel.aggregate([
       { $match: { property: new mongoose.Types.ObjectId(propertyId) } },
@@ -41,6 +42,7 @@ export class ReviewService {
     await property.save({ validateBeforeSave: false });
   }
 
+  //get reiwe with pagination
   async getReview(propertyId: string, query: Query): Promise<Review[]> {
     let que = this.reviewModel.find({ property: propertyId });
     if (query.limit) {
@@ -56,6 +58,7 @@ export class ReviewService {
     return review;
   }
 
+  //create new review
   async createReview(
     propertyId: string,
     userId: string,
@@ -77,6 +80,7 @@ export class ReviewService {
     return review;
   }
 
+  //update rewview
   async updateReview(
     propertyId: string,
     reviewId: string,
@@ -95,6 +99,7 @@ export class ReviewService {
     return review;
   }
 
+  //delete review
   async deleteReview(propertyId: string, reviewId: string): Promise<void> {
     const review = await this.reviewModel.findByIdAndDelete(reviewId);
     if (!review) {
@@ -104,6 +109,7 @@ export class ReviewService {
     }
     await this.averageRating(propertyId);
   }
+  
   //admin work
   async numberOfReviews(): Promise<number> {
     const reviews = await this.reviewModel.countDocuments();

@@ -1,12 +1,9 @@
 import {
   Body,
   Controller,
-  Get,
   Param,
   Patch,
   Post,
-  Req,
-  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -14,7 +11,6 @@ import { AuthService } from './auth.service';
 import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/signUp.dto';
 import { LoginDto } from './dto/login.dto';
-import { Request, Response } from 'express';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { ForgetPasswordDto } from './dto/forgetPassword.dto';
 import { FileInterceptor } from '@nestjs/platform-express';

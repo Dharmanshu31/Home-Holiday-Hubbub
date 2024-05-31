@@ -8,6 +8,7 @@ import {
 import { Request, Response } from 'express';
 import { MongoError } from 'mongodb';
 
+//golobal exeption filter
 @Catch()
 export class AsyncExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {

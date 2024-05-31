@@ -24,6 +24,7 @@ import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { Request } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { GeminiAIDto } from './dto/gemini.dto';
 
 @Controller('property')
 export class PropertyController {
@@ -101,5 +102,11 @@ export class PropertyController {
   @Roles('admin')
   numberOfProperty(): Promise<number> {
     return this.propertyService.numberOfProperty();
+  }
+
+  //collect data on base of user propmt
+  @Post('/user/userSpecific')
+  getUserSpecificProperty(@Body() geminiAiDto:GeminiAIDto){
+    return this.propertyService.getUserSpecificProperty(geminiAiDto)
   }
 }

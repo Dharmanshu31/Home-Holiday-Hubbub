@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Property } from './schemas/property.schema';
 import { Model } from 'mongoose';
@@ -9,11 +9,12 @@ import { Request } from 'express';
 import * as sharp from 'sharp';
 import * as path from 'path';
 import { AddressFormate } from 'src/utils/address-formater';
+import { GeminiAIDto } from './dto/gemini.dto';
 const axios = require('axios');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 @Injectable()
 export class PropertyService {
   constructor(@InjectModel(Property.name) private propertyModel: Model<Property>) {}
-
   //create property
   async createProperty(
     property: CreatePropertyDto,
@@ -73,8 +74,6 @@ export class PropertyService {
     if (query.sort) {
       const sortBy = (query.sort as string).split(',').join(' ');
       que = que.sort(sortBy);
-    } else {
-      que = que.sort('-createdAt');
     }
 
     // Apply field selection
@@ -89,13 +88,12 @@ export class PropertyService {
     const total = await this.propertyModel.countDocuments(filter);
 
     // Apply pagination
-    if (query.page && query.limit) {
+    if (query.page) {
       const page = +query.page;
       const limit = +query.limit;
       const skip = (page - 1) * limit;
       que = que.skip(skip).limit(limit);
     }
-
     // Execute the query and return the results
     const properties = await que;
     return { properties, total };
@@ -108,7 +106,6 @@ export class PropertyService {
       .populate({ path: 'reviews', select: '-__v' });
     return property;
   }
-
 
   //update property
   async updateProperty(
@@ -225,5 +222,19 @@ export class PropertyService {
   async numberOfProperty(): Promise<number> {
     const property = await this.propertyModel.countDocuments();
     return property;
+  }
+
+  //user specific property by gimini
+  async getUserSpecificProperty(geminiAiDto: GeminiAIDto) {
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_SECRET);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+    const chat = model.startChat();
+
+    const result = await chat.sendMessage(geminiAiDto.userPrompt);
+    const response = await result.response;
+    const text = await response.text();
+
+    return text;
   }
 }

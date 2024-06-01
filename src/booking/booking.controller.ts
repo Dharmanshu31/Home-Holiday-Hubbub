@@ -50,15 +50,22 @@ export class BookingController {
 
   @Get('owner/:ownerId/earning')
   @UseGuards(AuthGuard(), RoleGuard)
-  @Roles('landlord','admin')
-  getTotalEarning(@Param('ownerId') ownerId:string){
-    return this.bookingService.getTotalEarning(ownerId)
+  @Roles('landlord', 'admin')
+  getTotalEarning(@Param('ownerId') ownerId: string) {
+    return this.bookingService.getTotalEarning(ownerId);
   }
-
 
   @Delete('/:bookingId')
   @UseGuards(AuthGuard())
   deleteBooking(@Param('bookingId') bookingId: string): Promise<string> {
     return this.bookingService.deleteBooking(bookingId);
+  }
+
+  //admin
+  @Get('admin/numberOfBookings')
+  @UseGuards(AuthGuard(), RoleGuard)
+  @Roles('admin')
+  numberOfProperty(): Promise<number> {
+    return this.bookingService.numberOfBookings();
   }
 }

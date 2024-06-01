@@ -167,8 +167,7 @@ export class BookingService {
     return bookings;
   }
 
-
-  //show booking on base of property 
+  //show booking on base of property
   async getAllBookingsWithPropertyId(propertyId: string) {
     const bookings = await this.bookingModel
       .find({ propertyId, status: 'completed' })
@@ -252,39 +251,44 @@ export class BookingService {
 
   //total earning of user
   async getTotalEarning(ownerId: string) {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const currentYear = new Date().getFullYear();
     const result = await this.bookingModel.aggregate([
       {
-        $match: { ownerId: new Types.ObjectId(ownerId), status: 'completed' },
+        $match: {
+          ownerId: new Types.ObjectId(ownerId),
+          status: 'completed',
+          createdAt: {
+            $gte: new Date(`${currentYear}-01-01`),
+            $lte: new Date(`${currentYear}-12-31`),
+          },
+        },
       },
       {
-        $facet: {
-          currentMonth: [
-            { $match: { createdAt: { $gte: startOfMonth } } },
-            { $group: { _id: null, totalEarning: { $sum: '$totalPrice' } } },
-          ],
-          currentYear: [
-            { $match: { createdAt: { $gte: startOfYear } } },
-            { $group: { _id: null, totalEarning: { $sum: '$totalPrice' } } },
-          ],
-          lifetime: [{ $group: { _id: null, totalEarning: { $sum: '$totalPrice' } } }],
+        $group: {
+          _id: { month: { $month: '$createdAt' } },
+          totalEarning: { $sum: '$totalPrice' },
+        },
+      },
+      {
+        $project: {
+          month: '$_id.month',
+          totalEarning: 1,
+          _id: 0,
         },
       },
     ]);
 
-    if (!result) {
-      return {
-        currentMonth: 0,
-        currentYear: 0,
-        lifetime: 0,
-      };
-    }
-    return {
-      currentMonth: result[0].currentMonth[0]?.totalEarning || 0,
-      currentYear: result[0].currentYear[0]?.totalEarning || 0,
-      lifetime: result[0]?.lifetime[0]?.totalEarning || 0,
-    };
+    const monthEarning = Array(12).fill(0);
+
+    result.forEach((earning) => {
+      monthEarning[earning.month - 1] = earning.totalEarning;
+    });
+    return monthEarning;
   }
+
+    //admin work
+    async numberOfBookings(): Promise<number> {
+      const booking = await this.bookingModel.countDocuments();
+      return booking;
+    }
 }

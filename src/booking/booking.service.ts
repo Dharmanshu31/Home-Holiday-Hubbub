@@ -6,6 +6,7 @@ import { Request } from 'express';
 import { Property } from 'src/property/schemas/property.schema';
 import Stripe from 'stripe';
 import { sendEmail } from 'src/utils/email';
+import { Query } from 'express-serve-static-core';
 @Injectable()
 export class BookingService {
   constructor(
@@ -145,11 +146,22 @@ export class BookingService {
   }
 
   //get all booking for admin
-  async getAllBookings(): Promise<Booking[]> {
-    const bookings = await this.bookingModel
+  async getAllBookings(query: Query) {
+    const page = +query.page;
+    const limit = +query.limit;
+    const skip = (page - 1) * limit;
+    const que = this.bookingModel
       .find({ status: 'completed' })
       .populate('propertyId')
-      .populate({ path: 'userId', select: 'name' });
+      .populate({ path: 'userId', select: 'name' })
+      .skip(skip)
+      .limit(limit);
+
+    const bookings = await Promise.all([
+      await que,
+      await this.bookingModel.countDocuments({ status: 'completed' }),
+    ]);
+
     if (!bookings) {
       throw new NotFoundException();
     }
@@ -157,20 +169,30 @@ export class BookingService {
   }
 
   //get booking of user
-  async getAllUserBooking(userId: string) {
-    const bookings = await this.bookingModel
+  async getAllUserBooking(userId: string, query: Query) {
+    const page = +query.page;
+    const limit = +query.limit;
+    const skip = (page - 1) * limit;
+    const que = this.bookingModel
       .find({ userId, status: 'completed' })
-      .populate('propertyId');
+      .populate('propertyId')
+      .skip(skip)
+      .limit(limit);
+
+    const bookings = await Promise.all([
+      await que,
+      await this.bookingModel.countDocuments({ userId, status: 'completed' }),
+    ]);
     if (!bookings) {
       throw new NotFoundException();
     }
     return bookings;
   }
 
-  //show booking on base of property
-  async getAllBookingsWithPropertyId(propertyId: string) {
+  //show booking on base of property for valid review
+  async getAllBookingsWithPropertyId(propertyId: string, req: Request) {
     const bookings = await this.bookingModel
-      .find({ propertyId, status: 'completed' })
+      .find({ propertyId, status: 'completed', userId: req.user['_id'] })
       .select('propertyId');
     if (!bookings) {
       throw new NotFoundException();
@@ -179,11 +201,22 @@ export class BookingService {
   }
 
   //get booking for owner
-  async getAllBookingForOwner(ownerId: string) {
-    const bookings = await this.bookingModel
+  async getAllBookingForOwner(ownerId: string, query: Query) {
+    const page = +query.page;
+    const limit = +query.limit;
+    const skip = (page - 1) * limit;
+    const que = this.bookingModel
       .find({ ownerId, status: 'completed' })
       .populate('propertyId')
-      .populate({ path: 'userId', select: 'name' });
+      .populate({ path: 'userId', select: 'name' })
+      .skip(skip)
+      .limit(limit);
+
+    const bookings = await Promise.all([
+      await que,
+      await this.bookingModel.countDocuments({ ownerId, status: 'completed' }),
+    ]);
+
     if (!bookings) {
       throw new NotFoundException();
     }
@@ -286,9 +319,9 @@ export class BookingService {
     return monthEarning;
   }
 
-    //admin work
-    async numberOfBookings(): Promise<number> {
-      const booking = await this.bookingModel.countDocuments();
-      return booking;
-    }
+  //admin work
+  async numberOfBookings(): Promise<number> {
+    const booking = await this.bookingModel.countDocuments();
+    return booking;
+  }
 }

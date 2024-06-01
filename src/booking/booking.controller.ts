@@ -1,4 +1,13 @@
-import { Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
@@ -6,6 +15,7 @@ import Stripe from 'stripe';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { Booking } from './schemas/booking.schema';
+import { Query as ExpressQuery } from 'express-serve-static-core';
 
 @Controller('booking')
 export class BookingController {
@@ -23,29 +33,30 @@ export class BookingController {
   @Get('admin')
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('admin')
-  getAllBookings(): Promise<Booking[]> {
-    return this.bookingService.getAllBookings();
+  getAllBookings(@Query() query: ExpressQuery) {
+    return this.bookingService.getAllBookings(query);
   }
 
   @Get('user/:userId')
   @UseGuards(AuthGuard())
-  getAllUserBooking(@Param('userId') userId: string): Promise<Booking[]> {
-    return this.bookingService.getAllUserBooking(userId);
+  getAllUserBooking(@Param('userId') userId: string, @Query() query: ExpressQuery) {
+    return this.bookingService.getAllUserBooking(userId, query);
   }
 
   @Get('property/:propertyId')
   @UseGuards(AuthGuard())
   getAllBookingsWithPropertyId(
     @Param('propertyId') propertyId: string,
+    @Req() req: Request,
   ): Promise<Booking[]> {
-    return this.bookingService.getAllBookingsWithPropertyId(propertyId);
+    return this.bookingService.getAllBookingsWithPropertyId(propertyId, req);
   }
 
   @Get('owner/:ownerId')
   @UseGuards(AuthGuard(), RoleGuard)
   @Roles('landlord', 'admin')
-  getAllBookingForOwner(@Param('ownerId') ownerId: string): Promise<Booking[]> {
-    return this.bookingService.getAllBookingForOwner(ownerId);
+  getAllBookingForOwner(@Param('ownerId') ownerId: string, @Query() query: ExpressQuery) {
+    return this.bookingService.getAllBookingForOwner(ownerId, query);
   }
 
   @Get('owner/:ownerId/earning')

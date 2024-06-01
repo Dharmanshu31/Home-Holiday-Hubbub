@@ -57,7 +57,7 @@ export class UserService {
     return user;
   }
 
-  //soft deletion of user 
+  //soft deletion of user
   async deleteMe(req: Request): Promise<void> {
     const user = await this.userModel.findOne({ _id: req.user['_id'] });
     user.isActive = false;
@@ -114,7 +114,7 @@ export class UserService {
     return users;
   }
 
-  //update user 
+  //update user
   async updateUserByAdmin(
     updateUserDto: UpdateuserByAdminDto,
     id: string,
@@ -165,18 +165,28 @@ export class UserService {
     return user;
   }
 
-  //get user wishlist id
+  //get user wishlist id for like check
   async getOnlyWishList(req: Request): Promise<User> {
     const user = await this.userModel.findById(req.user['_id']).select('wishList');
     return user;
   }
 
   //get wishlist with data
-  async getWishList(req: Request): Promise<User> {
-    const user = await this.userModel
-      .findById(req.user['_id'])
-      .select('wishList')
-      .populate('wishList');
+  async getWishList(req: Request, query: Query) {
+    const page = +query.page;
+    const limit = +query.limit;
+    const skip = (page - 1) * limit;
+    const que = this.userModel.findById(req.user['_id']).select('wishList').populate({
+      path: 'wishList',
+      options: {
+        skip,
+        limit,
+      },
+    });
+    const user = await Promise.all([
+      await que,
+      (await this.userModel.findById(req.user['_id'])).wishList.length,
+    ]);
     return user;
   }
 }

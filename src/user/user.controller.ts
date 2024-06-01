@@ -93,9 +93,10 @@ export class UserController {
   //user wishlist
   @Get('wishList')
   @UseGuards(AuthGuard())
-  getWishList(@Req() req: Request): Promise<User> {
-    return this.userService.getWishList(req);
+  getWishList(@Req() req: Request, @Query() query: ExpressQuery){
+    return this.userService.getWishList(req, query);
   }
+  
   @Post('wishList/:propertyId')
   @UseGuards(AuthGuard())
   addWishList(

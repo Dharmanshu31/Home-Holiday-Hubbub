@@ -117,10 +117,10 @@ export class BookingService {
             const user = booking.userId as any;
             const owner = booking.ownerId as any;
             const message = `
-                  <p>This is confirmation Email for Success full Booking</p>
+                  <p>This is confirmation Email for Successfull Booking</p>
                   <p>you Booking is from ${booking.startDate} to ${booking.endDate}</p>
                   <p><b>user email --${user.email}</b></p>
-                  <p><b>user email --${owner.email}</b></p>
+                  <p><b>owner email --${owner.email}</b></p>
                    `;
 
             await sendEmail({
@@ -240,8 +240,7 @@ export class BookingService {
     );
     if (index !== -1) {
       const sixDay = Math.ceil(
-        (booking.startDate.getTime() - booking.createdAt.getTime()) /
-          (1000 * 60 * 60 * 24),
+        (booking.startDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
       );
       if (sixDay >= 6) {
         const stripe = require('stripe')(process.env.STRIP_SECRET);
@@ -255,7 +254,8 @@ export class BookingService {
                   <p>You have book ${property.name} from ${booking.startDate} to ${booking.endDate} is cancel </p>
                   <p><b>You will get your Refund in 15 Working Day</b></p>
                   <p><b>user email --${user.email}</b></p>
-                  <p><b>user email --${owner.email}</b></p>
+                  <p><b>owner email --${owner.email}</b></p>
+                  <p>Note:- if you have any issue connect the owner at his email <p>
                    `;
 
         if (refund) {

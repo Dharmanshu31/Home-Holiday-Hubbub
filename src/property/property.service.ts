@@ -227,14 +227,32 @@ export class PropertyService {
   //user specific property by gimini
   async getUserSpecificProperty(geminiAiDto: GeminiAIDto) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_SECRET);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
-    const chat = model.startChat();
+    let chat = model.startChat();
 
-    const result = await chat.sendMessage(geminiAiDto.userPrompt);
-    const response = await result.response;
-    const text = await response.text();
+    while (true) {
+      const prompt = `You are an AI assistant. When a user asks about a place they want to visit, provide information on the best places to visit and YouTube links for tourist attractions. Ensure responses are concise and informative, focusing on these specific topics in response should look like list and make youtube link clickble like if there is new topic the all the othere are start with next line
+      
+    If the user sends a greeting message, respond with a greeting and ask them to describe the place they want to visit.
 
-    return text;
+    Now, help me with the following place described by the user:
+    ${geminiAiDto.userPrompt}
+
+    Respond in a list format with each item on a new line and make YouTube links clickable. For example:
+    1. Best Places to Visit:
+       - Place 1
+       - Place 2 ...etc
+    4. YouTube Links:
+       - [Tourist Attraction 1](https://www.youtube.com/link1)
+       - [Tourist Attraction 2](https://www.youtube.com/link2) ...etc
+    `;
+
+      const result = await chat.sendMessage(prompt);
+      const response = await result.response;
+      const text = await response.text();
+
+      return text;
+    }
   }
 }
